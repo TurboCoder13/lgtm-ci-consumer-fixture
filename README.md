@@ -80,8 +80,9 @@ publish step.
 `reusable-release-version-pr.yml`; `app-token-probe.yml` mints the same kind
 of token directly. All three need the GitHub App:
 
-- **App:** APP_NAME_PENDING, owned by the fixture owner, installed on
-  **this repository only** (single-repo install, not the whole account).
+- **App:** `lgtm-ci-fixture-release` (PR author `lgtm-ci-fixture-release[bot]`),
+  owned by the fixture owner, installed on **this repository only**
+  (single-repo install, not the whole account).
 - **Permissions:** Contents, Pull requests, Issues, Workflows — read & write.
 - **Secrets:** `RELEASE_APP_ID` and `RELEASE_APP_PRIVATE_KEY`, set on this
   repository and forwarded to the reusable exactly as in the lgtm-ci examples.
@@ -103,11 +104,19 @@ today's lgtm-ci the hook shares a job — filesystem and App token — with the
 tooling that follows it, so the marker is expected to appear; after #849 the
 run must fail before any PR, branch or commit is created.
 
+Results (lgtm-ci `fab929f1`, 2026-10-04):
+
 | Dispatch | Workflow | Expected | Observed |
 |---|---|---|---|
-| pending | `app-token-probe.yml` | 3 jobs green; un-scoped token sees 1 repo | pending |
-| pending | `release-version-pr.yml` | version PR opened by the App | pending |
-| pending | `release-tamper-hook.yml` | `TAMPERED` marker in the run log (today) | pending |
+| [37214083123](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37214083123) | `app-token-probe.yml` | 3 jobs green; un-scoped token sees 1 repo | 3/3 green. Un-scoped token: `total_count=1`, only this repo. Scoped: same. Private sibling `trader-service`: `HTTP 404`; public sibling `git-replay`: `admin=false push=false pull=false` |
+| [37214105430](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37214105430) | `release-version-pr.yml` | version PR opened by the App | **failed** at `Update CHANGELOG.md`: `CHANGELOG.md not found` — the reusable requires an existing CHANGELOG.md and the docs do not say so. Added one |
+| [37214200965](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37214200965) | `release-version-pr.yml` | version PR opened by the App | [PR #3](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/3) `chore(release): version 0.2.0` by the App, signed commit (`verified=true`), `python/pyproject.toml` + `python/uv.lock` (tomlkit fallback, `uv` absent) + CHANGELOG. Closed, branch deleted |
+| [37214295869](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37214295869) | `release-tamper-hook.yml` | `TAMPERED` marker in the run log (today) | marker printed by `Check for version file changes`; run green; [PR #4](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/4) opened anyway. Closed, branch deleted. Confirms #849 |
+
+The first probe dispatch
+([37213943269](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37213943269))
+failed its negative job because it read a *public* sibling repo, which any
+token can do (`permissions` all false). The job now uses a private sibling.
 
 ## Baseline
 
