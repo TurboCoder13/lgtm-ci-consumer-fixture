@@ -24,7 +24,7 @@ jobs:
       job-name: "Egress (explicit list)"
       node-version: "22"
       working-directory: node
-      package-manager: npm
+      package-manager: bun
       coverage: false
       publish-test-summary: false
       runner-image: ubuntu-24.04
@@ -54,7 +54,7 @@ jobs:
       job-name: "Egress (preset only)"
       node-version: "22"
       working-directory: node
-      package-manager: npm
+      package-manager: bun
       coverage: false
       publish-test-summary: false
       runner-image: ubuntu-24.04
