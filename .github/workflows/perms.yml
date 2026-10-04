@@ -1,0 +1,30 @@
+# lgtm-ci external-consumer fixture — documented-minimum caller permissions
+# (#735, #736). contents:read + pull-requests:write is the documented block for
+# test reusables on push; the internal publish job declares pull-requests:write
+# even when disabled, and GitHub validates it at parse time.
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-perms
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  documented-minimum:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@ff43c750730a5a31fe31ce87cbb22f847495f2f5
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "Python Tests (documented perms)"
+      python-version: "3.12"
+      working-directory: python
+      coverage: false
+      publish-test-summary: false
+      runner-image: ubuntu-24.04

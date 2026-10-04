@@ -1,0 +1,64 @@
+# lgtm-ci external-consumer fixture — two sibling invocations in one run
+# Proves artifact namespace isolation between sibling calls (lgtm-ci #752).
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-siblings
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  a:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@ff43c750730a5a31fe31ce87cbb22f847495f2f5
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "Python Tests (a)"
+      python-version: "3.12"
+      working-directory: python
+      coverage: true
+      upload-coverage: true
+      publish-test-summary: false
+      runner-image: ubuntu-24.04
+
+  b:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@ff43c750730a5a31fe31ce87cbb22f847495f2f5
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "Python Tests (b)"
+      python-version: "3.13"
+      working-directory: python
+      coverage: true
+      upload-coverage: true
+      publish-test-summary: false
+      runner-image: ubuntu-24.04
+
+  artifacts:
+    needs: [a, b]
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+    steps:
+      - name: Require distinct artifact names across sibling calls
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          gh api -X GET "repos/$GH_REPO/actions/runs/$RUN_ID/artifacts" \
+            --jq '.artifacts[].name' | tee names.txt
+          dupes="$(sort names.txt | uniq -d)"
+          if [ -n "$dupes" ]; then
+            echo "::error::duplicate artifact names across sibling calls: $dupes"
+            exit 1
+          fi
