@@ -23,7 +23,7 @@ jobs:
   # non-allowlisted host must be denied inside the hardened job.
   block-explicit-list:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@0db0533c6cfb46d1de6108f514e5a0d16b10071c
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@5e455002bbea9df8890de98a9f8ad72efb811cf7
     permissions:
       contents: read
       pull-requests: write
@@ -55,7 +55,7 @@ jobs:
   # before #913 (preset decorative), ALLOWED once #913 lands.
   preset-pypi-allows-pypi-host:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@0db0533c6cfb46d1de6108f514e5a0d16b10071c
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@5e455002bbea9df8890de98a9f8ad72efb811cf7
     permissions:
       contents: read
       pull-requests: write
@@ -81,7 +81,7 @@ jobs:
   # the union of all presets and that preset *selection* is what enforces.
   preset-github-tooling-denies-pypi-host:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@0db0533c6cfb46d1de6108f514e5a0d16b10071c
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@5e455002bbea9df8890de98a9f8ad72efb811cf7
     permissions:
       contents: read
       pull-requests: write
