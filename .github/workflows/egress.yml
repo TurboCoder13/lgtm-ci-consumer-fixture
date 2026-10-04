@@ -42,8 +42,11 @@ jobs:
         then echo "::error::egress to example.com was NOT blocked"; exit 1;
         else echo "egress to example.com blocked as expected"; fi
 
-  # Preset only: documents the #913 contract. Today the preset never reaches
-  # harden-runner, so this job is EXPECTED TO FAIL on main until #913 lands.
+  # Preset only: documents the #913 contract. The preset never reaches
+  # harden-runner today, yet this job still passes because harden-runner
+  # allows GitHub's own hosts implicitly. #913's acceptance test must therefore
+  # probe a host that exists ONLY in the selected preset (allowed after the
+  # fix, denied before), rather than expect this job to fail.
   block-preset-only:
     # yamllint disable-line rule:line-length
     uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@87e1bf19a91e92c13285b9f81e4931708fb7199d
