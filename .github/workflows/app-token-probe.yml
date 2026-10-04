@@ -8,9 +8,9 @@
 #                     exactly one repository and it is this one.
 #   reach-scoped    — adds `repositories: <this repo>` (the #849 shape).
 #                     Must also succeed.
-#   reach-negative  — owner-only token must NOT read a sibling repository of
-#                     the same owner that the App is not installed on
-#                     (expects 404/403).
+#   reach-negative  — owner-only token must NOT reach sibling repositories of
+#                     the same owner that the App is not installed on: a
+#                     private one 404s, a public one shows no permissions.
 #
 # No lgtm-ci reusable is called here; the pin is the create-github-app-token
 # SHA lgtm-ci uses so the probe exercises the same action version.
@@ -146,32 +146,46 @@ jobs:
           app-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-      - name: Read a sibling repository the App is not installed on
+      - name: Read sibling repositories the App is not installed on
         shell: bash
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          # Public repo of the same owner; the App is installed on the
-          # fixture only, so the installation token must be refused here.
-          SIBLING_REPO: ${{ github.repository_owner }}/git-replay
+          # Same owner, App not installed. The private one must 404 (a token
+          # without reach cannot even see it). The public one is readable by
+          # any token — first dispatch 37213943269 proved that — so the check
+          # there is that the token holds no granted permission on it
+          # (`permissions.pull == false`, i.e. anonymous-level only).
+          PRIVATE_SIBLING: ${{ github.repository_owner }}/trader-service
+          PUBLIC_SIBLING: ${{ github.repository_owner }}/git-replay
         run: |
           set -euo pipefail
           set +e
-          out=$(gh api -X GET "repos/${SIBLING_REPO}" 2>&1)
+          out=$(gh api -X GET "repos/${PRIVATE_SIBLING}" 2>&1)
           rc=$?
           set -e
-          echo "exit=${rc}"
-          echo "$out" | head -5
+          echo "private sibling exit=${rc}"
+          echo "$out" | head -3
           if [[ "$rc" -eq 0 ]]; then
-            echo "::error::owner-only token read ${SIBLING_REPO}; App reach is wider than its installation"
+            echo "::error::owner-only token read private ${PRIVATE_SIBLING}; App reach is wider than its installation"
             exit 1
           fi
           if ! grep -qE 'HTTP (403|404)' <<<"$out"; then
-            echo "::error::expected HTTP 403/404, got: ${out}"
+            echo "::error::expected HTTP 403/404 on ${PRIVATE_SIBLING}, got: ${out}"
             exit 1
           fi
-          echo "OK: ${SIBLING_REPO} refused as expected"
+          private_status=$(grep -oE 'HTTP (403|404)' <<<"$out" | head -1)
+          echo "OK: ${PRIVATE_SIBLING} refused (${private_status})"
+
+          perms=$(gh api -X GET "repos/${PUBLIC_SIBLING}" --jq '.permissions | "admin=\(.admin) push=\(.push) pull=\(.pull)"')
+          echo "public sibling permissions: ${perms}"
+          if [[ "$perms" != "admin=false push=false pull=false" ]]; then
+            echo "::error::owner-only token holds permissions on public ${PUBLIC_SIBLING}: ${perms}"
+            exit 1
+          fi
+          echo "OK: ${PUBLIC_SIBLING} readable only at anonymous level"
           {
             echo "### Negative reach"
             echo
-            echo "- \`${SIBLING_REPO}\`: refused (\`$(grep -oE 'HTTP (403|404)' <<<"$out" | head -1)\`)"
+            echo "- \`${PRIVATE_SIBLING}\` (private): refused (\`${private_status}\`)"
+            echo "- \`${PUBLIC_SIBLING}\` (public): \`${perms}\`"
           } >> "$GITHUB_STEP_SUMMARY"
