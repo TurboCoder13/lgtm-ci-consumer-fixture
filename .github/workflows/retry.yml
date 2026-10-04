@@ -1,16 +1,16 @@
-# lgtm-ci external-consumer fixture — Python test path (reusable-test-python)
+# lgtm-ci external-consumer fixture — single-call target for job re-runs
+# (lgtm-ci #803, #717). A workflow cannot re-run its own jobs from inside, so
+# convergence is verified from outside with `gh run rerun <run-id> --job <id>`
+# — see scripts/rerun-sibling.sh and the README. This workflow exists so a
+# re-run of a lone reusable call (no sibling) can be exercised too.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
-# On pull_request the test-summary comment is enabled so the PR-gated publish
-# job (comment, fork guard) actually executes; push behaviour is unchanged.
 ---
-name: fixture-python
+name: fixture-retry
 
 "on":
   workflow_dispatch:
   push:
-    branches: [main]
-  pull_request:
     branches: [main]
 
 permissions: {}
@@ -23,10 +23,10 @@ jobs:
       contents: read
       pull-requests: write
     with:
-      job-name: "Python Tests"
+      job-name: "Python Tests (retry)"
       python-version: "3.12"
       working-directory: python
       coverage: true
       upload-coverage: true
-      publish-test-summary: ${{ github.event_name == 'pull_request' }}
+      publish-test-summary: false
       runner-image: ubuntu-24.04
