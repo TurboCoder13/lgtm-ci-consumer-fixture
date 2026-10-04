@@ -1,12 +1,16 @@
 # lgtm-ci external-consumer fixture — Node test path, package-manager=bun
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+# On pull_request the test-summary comment is enabled so the PR-gated publish
+# job (comment, fork guard) actually executes; push behaviour is unchanged.
 ---
 name: fixture-node-bun
 
 "on":
   workflow_dispatch:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 permissions: {}
@@ -24,7 +28,7 @@ jobs:
       working-directory: node
       package-manager: bun
       coverage: false
-      publish-test-summary: false
+      publish-test-summary: ${{ github.event_name == 'pull_request' }}
       runner-image: ubuntu-24.04
       # Assertions inside the hardened job: tooling source is present alongside
       # caller source, and only the selected manager touched the tree.
