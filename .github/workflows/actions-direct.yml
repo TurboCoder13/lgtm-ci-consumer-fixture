@@ -1,0 +1,102 @@
+# lgtm-ci external-consumer fixture — direct composite-action path (#1075)
+# Calls the four public runner actions with
+# `uses: lgtm-hq/lgtm-ci/.github/actions/<name>@<sha>` from a consumer workflow
+# that checks out ONLY its own source. There is no lgtm-ci checkout and no
+# tooling-ref, so a nested `uses: ./.github/actions/setup-*` inside those
+# composites has nothing to resolve against and the job fails with
+# "Can't find 'action.yml'". Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-actions-direct
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  pytest:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Assert no lgtm-ci source in the workspace
+        run: scripts/check-no-vendoring.sh
+      - name: run-pytest (direct)
+        # yamllint disable-line rule:line-length
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-pytest@ff43c750730a5a31fe31ce87cbb22f847495f2f5
+        with:
+          python-version: "3.12"
+          working-directory: python
+          coverage: "true"
+
+  vitest:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Assert no lgtm-ci source in the workspace
+        run: scripts/check-no-vendoring.sh
+      - name: run-vitest (direct)
+        # yamllint disable-line rule:line-length
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-vitest@ff43c750730a5a31fe31ce87cbb22f847495f2f5
+        with:
+          node-version: "22"
+          working-directory: node
+          coverage: "true"
+
+  playwright:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Assert no lgtm-ci source in the workspace
+        run: scripts/check-no-vendoring.sh
+      - name: run-playwright (direct)
+        # yamllint disable-line rule:line-length
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-playwright@ff43c750730a5a31fe31ce87cbb22f847495f2f5
+        with:
+          node-version: "22"
+          working-directory: playwright
+          browser: chromium
+
+  lighthouse:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Assert no lgtm-ci source in the workspace
+        run: scripts/check-no-vendoring.sh
+      - name: Serve the static site
+        run: |
+          python3 -m http.server 8080 --directory site >/tmp/http.log 2>&1 &
+          for _ in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/ >/dev/null && break
+            sleep 0.5
+          done
+          curl -fsS http://127.0.0.1:8080/ >/dev/null
+      - name: run-lighthouse (direct)
+        # yamllint disable-line rule:line-length
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-lighthouse@ff43c750730a5a31fe31ce87cbb22f847495f2f5
+        with:
+          url: http://127.0.0.1:8080/
+          node-version: "22"
+          # The point is resolution, not scoring; keep thresholds lenient so a
+          # slow runner cannot turn a resolution pass into a score failure.
+          threshold-performance: "50"
+          threshold-accessibility: "50"
+          threshold-best-practices: "50"
+          threshold-seo: "50"

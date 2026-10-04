@@ -1,0 +1,10 @@
+{
+  "name": "fixture-playwright",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Playwright project for lgtm-ci external-consumer verification",
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}
