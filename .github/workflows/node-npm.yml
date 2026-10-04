@@ -14,7 +14,7 @@ permissions: {}
 jobs:
   test:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@87e1bf19a91e92c13285b9f81e4931708fb7199d
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@fab929f188e7d58fa5a9c6461ea0686ca48e4109
     permissions:
       contents: read
       pull-requests: write
