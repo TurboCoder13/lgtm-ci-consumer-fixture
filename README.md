@@ -18,6 +18,9 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `perms.yml` | push, dispatch | Documented-minimum caller permissions (`contents: read`, `pull-requests: write`) parse and run (#735/#736) |
 | `perms-negative.yml` | dispatch only | **Negative:** `contents: read` alone. Expected `startup_failure` at parse time; observed: see [Permission negative test](#permission-negative-test) |
 | `actions-direct.yml` | push, dispatch | Direct `uses: lgtm-hq/lgtm-ci/.github/actions/run-*@sha` path (#1075) |
+| `app-token-probe.yml` | dispatch only | Reach of a GitHub App token minted as the release reusables do (`owner` only, no `repositories:`): single-repo install sees exactly one repo; scoped variant works; sibling repo refused (#849) |
+| `release-version-pr.yml` | dispatch only | `reusable-release-version-pr` from outside the org: App token, python ecosystem under `python/`, opens a version PR (closed by hand). See [Release paths](#release-paths) |
+| `release-tamper-hook.yml` | dispatch only | **Negative-by-design:** `version-update-script` rewrites the next lgtm-ci script in the tooling checkout. Expected to succeed on today's lgtm-ci, must fail after #849 |
 
 ## Pinning to a candidate
 
@@ -70,6 +73,41 @@ should reject at parse time as a permission the caller never granted.
 The documented minimum in lgtm-ci is therefore accurate: dropping
 `pull-requests: write` is rejected before any job runs, not silently at the
 publish step.
+
+## Release paths
+
+`release-version-pr.yml` and `release-tamper-hook.yml` call
+`reusable-release-version-pr.yml`; `app-token-probe.yml` mints the same kind
+of token directly. All three need the GitHub App:
+
+- **App:** APP_NAME_PENDING, owned by the fixture owner, installed on
+  **this repository only** (single-repo install, not the whole account).
+- **Permissions:** Contents, Pull requests, Issues, Workflows — read & write.
+- **Secrets:** `RELEASE_APP_ID` and `RELEASE_APP_PRIVATE_KEY`, set on this
+  repository and forwarded to the reusable exactly as in the lgtm-ci examples.
+- **Tag:** `v0.1.0` on `4003cf6` is the baseline; the bump is computed from
+  conventional commits after it, so dispatches produce a `v0.2.0` PR until a
+  real `feat:`/`fix:` lands after that tag.
+
+`release-version-pr.yml` and `release-tamper-hook.yml` **open a real
+version PR** in this repository (branch `release/v<next>`, label `fixture`).
+The PR is closed and its branch deleted by hand straight after each dispatch;
+nothing is ever merged or tagged from these runs. Close the previous PR
+before dispatching again — the reusable skips when a version PR already
+exists.
+
+`release-tamper-hook.yml` is the #849 probe: `scripts/tamper-hook.sh` runs as
+the `version-update-script` and rewrites `check-version-files-changed.sh` in
+the `.lgtm-ci-tooling` checkout so it prints `::warning::TAMPERED`. On
+today's lgtm-ci the hook shares a job — filesystem and App token — with the
+tooling that follows it, so the marker is expected to appear; after #849 the
+run must fail before any PR, branch or commit is created.
+
+| Dispatch | Workflow | Expected | Observed |
+|---|---|---|---|
+| pending | `app-token-probe.yml` | 3 jobs green; un-scoped token sees 1 repo | pending |
+| pending | `release-version-pr.yml` | version PR opened by the App | pending |
+| pending | `release-tamper-hook.yml` | `TAMPERED` marker in the run log (today) | pending |
 
 ## Baseline
 

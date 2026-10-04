@@ -1,0 +1,63 @@
+# lgtm-ci external-consumer fixture — version-update-script tamper probe
+# (reusable-release-version-pr, lgtm-hq/lgtm-ci#849)
+# Same call as release-version-pr.yml, plus `version-update-script:
+# scripts/tamper-hook.sh`. The hook rewrites the next lgtm-ci script in the
+# tooling checkout (check-version-files-changed.sh) so it prints a
+# `::warning::TAMPERED` marker, then exits 0. It does not touch this
+# repository's files.
+#
+# EXPECTED on today's lgtm-ci: the marker appears in the "Check for version
+# file changes" step log. The consumer hook runs in the same job — same
+# filesystem, same App installation token — as the tooling that follows it,
+# so a hook can rewrite tooling that then runs with the App's reach (#849).
+# AFTER #849: the run must fail before any mutation (PR/branch/commit), and
+# the marker must not appear.
+#
+# Any PR this run opens is closed and its branch deleted by hand right after.
+# workflow_dispatch only. Calls lgtm-hq/lgtm-ci at an exact SHA with NO
+# tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-release-tamper-hook
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release-version-pr-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  version-pr-tampered:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-version-pr.yml@87e1bf19a91e92c13285b9f81e4931708fb7199d
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      issues: write
+    with:
+      ecosystems: python
+      ecosystem-config: >-
+        {"python": {"pyproject": "python/pyproject.toml"}}
+      max-bump: minor
+      auto-merge: false
+      pr-labels: fixture
+      report-failures: false
+      version-update-script: scripts/tamper-hook.sh
+      egress-policy: block
+      allowed-endpoints: >-
+        github.com:443
+        api.github.com:443
+        codeload.github.com:443
+        objects.githubusercontent.com:443
+        raw.githubusercontent.com:443
+        uploads.github.com:443
+        pipelines.actions.githubusercontent.com:443
+        pypi.org:443
+        files.pythonhosted.org:443
+      runner-image: ubuntu-24.04
+    secrets:
+      RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

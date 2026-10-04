@@ -1,0 +1,62 @@
+# lgtm-ci external-consumer fixture — release version PR path
+# (reusable-release-version-pr). Calls lgtm-hq/lgtm-ci at an exact SHA with NO
+# tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+#
+# The GitHub App behind RELEASE_APP_ID / RELEASE_APP_PRIVATE_KEY is installed
+# on this repository only. A successful run opens a `chore(release)` PR here
+# (python/pyproject.toml + uv.lock bump + CHANGELOG.md) labelled `fixture`;
+# the PR is closed by hand straight after so the fixture never releases.
+#
+# workflow_dispatch only: opening PRs on every push would be noise, and the
+# bump is computed from conventional commits since the latest `v*` tag.
+# pyproject.toml lives under python/, hence the ecosystem-config override.
+# allowed-endpoints adds PyPI because the python updater installs tomlkit
+# when it is missing from the runner (see lgtm-ci reusable-release-
+# multi-ecosystem notes); the enforcing harden-runner step runs before preset
+# resolution, so the preset alone would block it.
+# Permissions per lgtm-ci examples/release-version-pr.yml (actions: read +
+# issues: write cover report-release-failure, disabled here).
+---
+name: fixture-release-version-pr
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release-version-pr-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  version-pr:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-version-pr.yml@87e1bf19a91e92c13285b9f81e4931708fb7199d
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      issues: write
+    with:
+      ecosystems: python
+      ecosystem-config: >-
+        {"python": {"pyproject": "python/pyproject.toml"}}
+      max-bump: minor
+      auto-merge: false
+      pr-labels: fixture
+      report-failures: false
+      egress-policy: block
+      allowed-endpoints: >-
+        github.com:443
+        api.github.com:443
+        codeload.github.com:443
+        objects.githubusercontent.com:443
+        raw.githubusercontent.com:443
+        uploads.github.com:443
+        pipelines.actions.githubusercontent.com:443
+        pypi.org:443
+        files.pythonhosted.org:443
+      runner-image: ubuntu-24.04
+    secrets:
+      RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

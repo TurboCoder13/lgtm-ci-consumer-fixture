@@ -1,0 +1,177 @@
+# lgtm-ci external-consumer fixture — GitHub App token reach probe (#849)
+# Mints installation tokens with actions/create-github-app-token exactly the
+# way the lgtm-ci release reusables do today (`owner` set, no `repositories:`)
+# and measures what those tokens can reach. The App is installed on this one
+# repository only, so an un-scoped token should see exactly one repository.
+#
+#   reach-unscoped  — mirrors lgtm-ci: owner only. Asserts the token lists
+#                     exactly one repository and it is this one.
+#   reach-scoped    — adds `repositories: <this repo>` (the #849 shape).
+#                     Must also succeed.
+#   reach-negative  — owner-only token must NOT read a sibling repository of
+#                     the same owner that the App is not installed on
+#                     (expects 404/403).
+#
+# No lgtm-ci reusable is called here; the pin is the create-github-app-token
+# SHA lgtm-ci uses so the probe exercises the same action version.
+# workflow_dispatch only; no secrets are printed.
+---
+name: fixture-app-token-probe
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  reach-unscoped:
+    name: Un-scoped token (owner only, as lgtm-ci does)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Harden runner
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+      - name: Create GitHub App installation token (owner only)
+        id: app-token
+        # yamllint disable-line rule:line-length
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: List installation repositories and assert single-repo reach
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          json=$(gh api -X GET /installation/repositories)
+          count=$(jq -r '.total_count' <<<"$json")
+          names=$(jq -r '.repositories[].full_name' <<<"$json")
+          echo "total_count=${count}"
+          echo "repositories:"
+          echo "$names" | sed 's/^/  - /'
+          echo "token-reach-count=${count}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Un-scoped App token reach"
+            echo
+            echo "- total_count: \`${count}\`"
+            echo "$names" | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$count" != "1" ]]; then
+            echo "::error::expected exactly 1 repository, got ${count}"
+            exit 1
+          fi
+          if [[ "$names" != "$EXPECTED_REPO" ]]; then
+            echo "::error::expected ${EXPECTED_REPO}, got ${names}"
+            exit 1
+          fi
+          echo "OK: un-scoped token reaches exactly ${EXPECTED_REPO}"
+
+  reach-scoped:
+    name: Scoped token (owner + repositories)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Harden runner
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+      - name: Create GitHub App installation token (scoped to this repo)
+        id: app-token
+        # yamllint disable-line rule:line-length
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+      - name: List installation repositories with the scoped token
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          json=$(gh api -X GET /installation/repositories)
+          count=$(jq -r '.total_count' <<<"$json")
+          names=$(jq -r '.repositories[].full_name' <<<"$json")
+          echo "total_count=${count}"
+          echo "$names" | sed 's/^/  - /'
+          {
+            echo "### Scoped App token reach"
+            echo
+            echo "- total_count: \`${count}\`"
+            echo "$names" | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$count" != "1" || "$names" != "$EXPECTED_REPO" ]]; then
+            echo "::error::scoped token should reach only ${EXPECTED_REPO}"
+            exit 1
+          fi
+          # The scoped token must still be usable against this repository.
+          gh api -X GET "repos/${EXPECTED_REPO}" --jq '.full_name'
+
+  reach-negative:
+    name: Un-scoped token must not reach a sibling repo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Harden runner
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+      - name: Create GitHub App installation token (owner only)
+        id: app-token
+        # yamllint disable-line rule:line-length
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Read a sibling repository the App is not installed on
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          # Public repo of the same owner; the App is installed on the
+          # fixture only, so the installation token must be refused here.
+          SIBLING_REPO: ${{ github.repository_owner }}/git-replay
+        run: |
+          set -euo pipefail
+          set +e
+          out=$(gh api -X GET "repos/${SIBLING_REPO}" 2>&1)
+          rc=$?
+          set -e
+          echo "exit=${rc}"
+          echo "$out" | head -5
+          if [[ "$rc" -eq 0 ]]; then
+            echo "::error::owner-only token read ${SIBLING_REPO}; App reach is wider than its installation"
+            exit 1
+          fi
+          if ! grep -qE 'HTTP (403|404)' <<<"$out"; then
+            echo "::error::expected HTTP 403/404, got: ${out}"
+            exit 1
+          fi
+          echo "OK: ${SIBLING_REPO} refused as expected"
+          {
+            echo "### Negative reach"
+            echo
+            echo "- \`${SIBLING_REPO}\`: refused (\`$(grep -oE 'HTTP (403|404)' <<<"$out" | head -1)\`)"
+          } >> "$GITHUB_STEP_SUMMARY"
