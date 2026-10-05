@@ -122,6 +122,16 @@ Results (lgtm-ci `fab929f1`, 2026-10-04):
 | [37214200965](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37214200965) | `release-version-pr.yml` | version PR opened by the App | [PR #3](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/3) `chore(release): version 0.2.0` by the App, signed commit (`verified=true`), `python/pyproject.toml` + `python/uv.lock` (tomlkit fallback, `uv` absent) + CHANGELOG. Closed, branch deleted |
 | [37214295869](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37214295869) | `release-tamper-hook.yml` | `TAMPERED` marker in the run log (today) | marker printed by `Check for version file changes`; run green; [PR #4](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/4) opened anyway. Closed, branch deleted. Confirms #849 |
 
+Results (lgtm-ci PR [#1097](https://github.com/lgtm-hq/lgtm-ci/pull/1097) head `87da5a5c`, 2026-10-05) — after #849:
+
+| Dispatch | Workflow | Expected | Observed |
+|---|---|---|---|
+| [37289624656](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37289624656) (baseline, `main` `269b3702`) | `release-tamper-hook.yml` | marker, PR opened | marker printed, green, PR #5 opened. Closed, branch deleted |
+| [37292937536](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37292937536) | `release-tamper-hook.yml` | **fail** before any mutation, no marker | `Run version update hook` **failed** (`sed: couldn't open temporary file …/.lgtm-ci-tooling/…: Permission denied`, hook exit 4); `Create Version PR` skipped; no marker, no PR, no branch |
+| [37292941503](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37292941503) | `app-token-probe.yml` | 3 jobs green | 3/3 green; scoped variant works |
+| [37293093443](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37293093443) | `release-version-pr.yml` | version PR opened; hook jobs skipped | [PR #6](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/6) by the App (`CHANGELOG.md`, `python/pyproject.toml`, `python/uv.lock`); `Prepare`/`Run version update hook` skipped. Closed, branch deleted |
+| [37293206639](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37293206639) | `release-benign-hook.yml` | hook edit reaches the PR via the artifact | `Prepare` wrote `release-metadata.json` (`latest_release: null` — no GitHub Release here, only the tag); hook ran with no token, changed 1 file; `Create Version PR` applied it; [PR #7](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/7) carries `HOOK_RELEASE_INFO.txt` (`next_version=0.2.0`). Closed, branch deleted |
+
 The first probe dispatch
 ([37213943269](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37213943269))
 failed its negative job because it read a *public* sibling repo, which any
