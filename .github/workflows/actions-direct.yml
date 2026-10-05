@@ -28,7 +28,7 @@ jobs:
         run: scripts/check-no-vendoring.sh
       - name: run-pytest (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-pytest@8937a3e10819ed5084f75cac829f08f2ac5fae19
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-pytest@3c42a87ec4b5daad8aa89512df23bed500e70326
         with:
           python-version: "3.12"
           working-directory: python
@@ -46,7 +46,7 @@ jobs:
         run: scripts/check-no-vendoring.sh
       - name: run-vitest (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-vitest@8937a3e10819ed5084f75cac829f08f2ac5fae19
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-vitest@3c42a87ec4b5daad8aa89512df23bed500e70326
         with:
           node-version: "22"
           working-directory: node
@@ -64,7 +64,7 @@ jobs:
         run: scripts/check-no-vendoring.sh
       - name: run-playwright (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-playwright@8937a3e10819ed5084f75cac829f08f2ac5fae19
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-playwright@3c42a87ec4b5daad8aa89512df23bed500e70326
         with:
           node-version: "22"
           working-directory: playwright
@@ -90,7 +90,7 @@ jobs:
           curl -fsS http://127.0.0.1:8080/ >/dev/null
       - name: run-lighthouse (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-lighthouse@8937a3e10819ed5084f75cac829f08f2ac5fae19
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-lighthouse@3c42a87ec4b5daad8aa89512df23bed500e70326
         with:
           url: http://127.0.0.1:8080/
           node-version: "22"
