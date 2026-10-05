@@ -132,6 +132,16 @@ Results (lgtm-ci PR [#1097](https://github.com/lgtm-hq/lgtm-ci/pull/1097) head `
 | [37293093443](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37293093443) | `release-version-pr.yml` | version PR opened; hook jobs skipped | [PR #6](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/6) by the App (`CHANGELOG.md`, `python/pyproject.toml`, `python/uv.lock`); `Prepare`/`Run version update hook` skipped. Closed, branch deleted |
 | [37293206639](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37293206639) | `release-benign-hook.yml` | hook edit reaches the PR via the artifact | `Prepare` wrote `release-metadata.json` (`latest_release: null` — no GitHub Release here, only the tag); hook ran with no token, changed 1 file; `Create Version PR` applied it; [PR #7](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/7) carries `HOOK_RELEASE_INFO.txt` (`next_version=0.2.0`). Closed, branch deleted |
 
+Final head of PR #1097 (`c8a647e4`, 2026-10-05): tamper
+[37302193493](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37302193493)
+fails in `Run version update hook`, no marker, no PR; benign
+[37302323143](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37302323143)
+opens [PR #11](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/pull/11)
+with `HOOK_RELEASE_INFO.txt` through artifacts
+`release-version-pr-{metadata,hook-changes}-v-4c94485e` (closed, branch
+deleted). Intermediate heads `ca7589df` and `940ae9fa` gave the same shape
+(runs 37294468681/37294473759 and 37298519065/37298749674; PRs #8, #10 closed).
+
 The first probe dispatch
 ([37213943269](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37213943269))
 failed its negative job because it read a *public* sibling repo, which any
