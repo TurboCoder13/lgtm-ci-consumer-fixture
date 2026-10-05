@@ -21,6 +21,7 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `app-token-probe.yml` | dispatch only | Reach of a GitHub App token minted as the release reusables do (`owner` only, no `repositories:`): single-repo install sees exactly one repo; scoped variant works; sibling repo refused (#849) |
 | `release-version-pr.yml` | dispatch only | `reusable-release-version-pr` from outside the org: App token, python ecosystem under `python/`, opens a version PR (closed by hand). See [Release paths](#release-paths) |
 | `release-tamper-hook.yml` | dispatch only | **Negative-by-design:** `version-update-script` rewrites the next lgtm-ci script in the tooling checkout. Expected to succeed on today's lgtm-ci, must fail after #849 |
+| `release-benign-hook.yml` | dispatch only | Well-behaved `version-update-script` (#849): edits `HOOK_RELEASE_INFO.txt` from `NEXT_VERSION` and `release-metadata.json`, asserts no token and read-only tooling; the edit must reach the version PR |
 
 ## Pinning to a candidate
 
@@ -76,9 +77,10 @@ publish step.
 
 ## Release paths
 
-`release-version-pr.yml` and `release-tamper-hook.yml` call
-`reusable-release-version-pr.yml`; `app-token-probe.yml` mints the same kind
-of token directly. All three need the GitHub App:
+`release-version-pr.yml`, `release-tamper-hook.yml` and
+`release-benign-hook.yml` call `reusable-release-version-pr.yml`;
+`app-token-probe.yml` mints the same kind of token directly. All four need
+the GitHub App:
 
 - **App:** `lgtm-ci-fixture-release` (PR author `lgtm-ci-fixture-release[bot]`),
   owned by the fixture owner, installed on **this repository only**
@@ -90,8 +92,8 @@ of token directly. All three need the GitHub App:
   conventional commits after it, so dispatches produce a `v0.2.0` PR until a
   real `feat:`/`fix:` lands after that tag.
 
-`release-version-pr.yml` and `release-tamper-hook.yml` **open a real
-version PR** in this repository (branch `release/v<next>`, label `fixture`).
+`release-version-pr.yml`, `release-benign-hook.yml` and (before #849)
+`release-tamper-hook.yml` **open a real version PR** in this repository (branch `release/v<next>`, label `fixture`).
 The PR is closed and its branch deleted by hand straight after each dispatch;
 nothing is ever merged or tagged from these runs. Close the previous PR
 before dispatching again — the reusable skips when a version PR already
@@ -103,6 +105,13 @@ the `.lgtm-ci-tooling` checkout so it prints `::warning::TAMPERED`. On
 today's lgtm-ci the hook shares a job — filesystem and App token — with the
 tooling that follows it, so the marker is expected to appear; after #849 the
 run must fail before any PR, branch or commit is created.
+
+`release-benign-hook.yml` is the positive counterpart: `scripts/benign-hook.sh`
+rewrites the tracked `HOOK_RELEASE_INFO.txt` from `NEXT_VERSION` and the
+read-only `release-metadata.json` that lgtm-ci writes for the hook, and fails
+itself if a token is in its environment or the tooling checkout is writable.
+After #849 the file's edit must appear in the version PR, carried from the
+`version-update-hook` job to `Create Version PR` as a diff artifact.
 
 Results (lgtm-ci `fab929f1`, 2026-10-04):
 

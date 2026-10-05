@@ -1,23 +1,19 @@
-# lgtm-ci external-consumer fixture — version-update-script tamper probe
+# lgtm-ci external-consumer fixture — well-behaved version-update-script
 # (reusable-release-version-pr, lgtm-hq/lgtm-ci#849)
 # Same call as release-version-pr.yml, plus `version-update-script:
-# scripts/tamper-hook.sh`. The hook rewrites the next lgtm-ci script in the
-# tooling checkout (check-version-files-changed.sh) so it prints a
-# `::warning::TAMPERED` marker, then exits 0. It does not touch this
-# repository's files.
+# scripts/benign-hook.sh`. The hook rewrites the tracked HOOK_RELEASE_INFO.txt
+# from NEXT_VERSION and the read-only release-metadata.json lgtm-ci provides,
+# and asserts its sandbox (no token, tooling not writable).
 #
-# EXPECTED on today's lgtm-ci: the marker appears in the "Check for version
-# file changes" step log. The consumer hook runs in the same job — same
-# filesystem, same App installation token — as the tooling that follows it,
-# so a hook can rewrite tooling that then runs with the App's reach (#849).
-# AFTER #849: the run must fail before any mutation (PR/branch/commit), and
-# the marker must not appear.
+# EXPECTED after #849: the run opens a version PR whose diff contains the
+# python bump, CHANGELOG and HOOK_RELEASE_INFO.txt, produced by the
+# `version-update-hook` job and applied by `Create Version PR`.
 #
 # Any PR this run opens is closed and its branch deleted by hand right after.
 # workflow_dispatch only. Calls lgtm-hq/lgtm-ci at an exact SHA with NO
 # tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
 ---
-name: fixture-release-tamper-hook
+name: fixture-release-benign-hook
 
 "on":
   workflow_dispatch:
@@ -29,7 +25,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  version-pr-tampered:
+  version-pr-hooked:
     # yamllint disable-line rule:line-length
     uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-version-pr.yml@87da5a5c60ae0dfbc85a059f642f52f4beeac135
     permissions:
@@ -45,7 +41,7 @@ jobs:
       auto-merge: false
       pr-labels: fixture
       report-failures: false
-      version-update-script: scripts/tamper-hook.sh
+      version-update-script: scripts/benign-hook.sh
       egress-policy: block
       allowed-endpoints: >-
         github.com:443
