@@ -165,6 +165,13 @@ Before #935 the `upload` job fails with `failed to run git: fatal: not a git
 repository`: it checks out lgtm-ci tooling only, never this repository, and
 set no `GH_REPO`, so `gh` had nowhere to upload to.
 
+Results (2026-10-06):
+
+| Dispatch | lgtm-ci pin | Expected | Observed |
+|---|---|---|---|
+| [37442408445](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37442408445) | `main` `97e1d795` (baseline) | upload fails, no assets | `failed to run git: fatal: not a git repository`; `assets on vfixture-37442408445: <none>`; release and tag deleted |
+| [37444408745](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37444408745) | PR [#1100](https://github.com/lgtm-hq/lgtm-ci/pull/1100) head `7eab3cb0` | both assets attached | `Uploaded 2 SBOM file(s)`; assets `fixture.cdx.json`, `fixture.spdx.json`; all three jobs green; release and tag deleted |
+
 ## Baseline
 
 The first run against lgtm-ci `main` is expected to fail; the run URLs are
