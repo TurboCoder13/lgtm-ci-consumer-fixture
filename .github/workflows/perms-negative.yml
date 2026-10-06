@@ -1,6 +1,6 @@
 # lgtm-ci external-consumer fixture — NEGATIVE permission test (#735, #736)
 # Calls reusable-test-python with `contents: read` only, omitting the
-# documented `pull-requests: write`. The reusable's publish job declares
+# documented `actions: read` (#803) and `pull-requests: write`. The reusable's publish job declares
 # pull-requests: write, and GitHub validates that a called workflow's
 # permissions are a subset of the caller's at parse time — so the expected
 # outcome is a startup_failure before any job runs. If this run instead

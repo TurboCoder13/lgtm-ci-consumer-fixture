@@ -1,7 +1,9 @@
 # lgtm-ci external-consumer fixture — documented-minimum caller permissions
-# (#735, #736). contents:read + pull-requests:write is the documented block for
-# test reusables on push; the internal publish job declares pull-requests:write
-# even when disabled, and GitHub validates it at parse time.
+# (#735, #736). actions:read + contents:read + pull-requests:write is the
+# documented block for test reusables on push; the internal publish job declares
+# pull-requests:write even when disabled, the aggregate job declares actions:read
+# for its artifact-availability wait (#803), and GitHub validates both at parse
+# time.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
 ---
@@ -19,6 +21,7 @@ jobs:
     # yamllint disable-line rule:line-length
     uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@c74c9c36914bf02d3771850511b4b44f8eab1984
     permissions:
+      actions: read
       contents: read
       pull-requests: write
     with:
