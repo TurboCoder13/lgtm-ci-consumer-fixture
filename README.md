@@ -22,6 +22,7 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `release-version-pr.yml` | dispatch only | `reusable-release-version-pr` from outside the org: App token, python ecosystem under `python/`, opens a version PR (closed by hand). See [Release paths](#release-paths) |
 | `release-tamper-hook.yml` | dispatch only | **Negative-by-design:** `version-update-script` rewrites the next lgtm-ci script in the tooling checkout. Expected to succeed on today's lgtm-ci, must fail after #849 |
 | `release-benign-hook.yml` | dispatch only | Well-behaved `version-update-script` (#849): edits `HOOK_RELEASE_INFO.txt` from `NEXT_VERSION` and `release-metadata.json`, asserts no token and read-only tooling; the edit must reach the version PR |
+| `sbom-release-upload.yml` | dispatch only | `reusable-sbom-release-upload.yml` against a disposable prerelease `vfixture-<run_id>` (#935): asserts the SBOM assets are attached via `gh api -X GET`, then deletes the release and tag. See [SBOM release upload](#sbom-release-upload) |
 
 ## Pinning to a candidate
 
@@ -146,6 +147,23 @@ The first probe dispatch
 ([37213943269](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37213943269))
 failed its negative job because it read a *public* sibling repo, which any
 token can do (`permissions` all false). The job now uses a private sibling.
+
+## SBOM release upload
+
+`sbom-release-upload.yml` is the #935 probe. `prepare` uploads two
+SBOM-shaped files as the `sbom` workflow artifact (the shape
+`reusable-sbom.yml` leaves behind in `release-assets` mode) and creates
+prerelease `vfixture-<run_id>` on the dispatched commit with `github.token`,
+the token the reusable itself uploads with. `upload` calls
+`reusable-sbom-release-upload.yml` with that tag. `verify` reads the asset
+list with `gh api -X GET /repos/{owner}/{repo}/releases/tags/<tag>`, requires
+both files, and deletes the release and tag whatever the outcome. No App
+token is involved: the reusable uses `github.token`, and a release created
+with it is enough for a `gh release upload` to the same repository.
+
+Before #935 the `upload` job fails with `failed to run git: fatal: not a git
+repository`: it checks out lgtm-ci tooling only, never this repository, and
+set no `GH_REPO`, so `gh` had nowhere to upload to.
 
 ## Baseline
 
