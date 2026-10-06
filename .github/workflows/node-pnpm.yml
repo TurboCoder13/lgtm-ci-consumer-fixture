@@ -1,8 +1,11 @@
-# lgtm-ci external-consumer fixture — Node test path, package-manager=npm
+# lgtm-ci external-consumer fixture — Node test path, package-manager=pnpm
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+# pnpm/action-setup reads the pnpm version from node/package.json
+# `packageManager`; node/pnpm-lock.yaml was generated with
+# `pnpm install --lockfile-only` (#1077).
 ---
-name: fixture-node-npm
+name: fixture-node-pnpm
 
 "on":
   workflow_dispatch:
@@ -19,10 +22,10 @@ jobs:
       contents: read
       pull-requests: write
     with:
-      job-name: "Node Tests (npm)"
+      job-name: "Node Tests (pnpm)"
       node-version: "22"
       working-directory: node
-      package-manager: npm
+      package-manager: pnpm
       coverage: false
       publish-test-summary: false
       runner-image: ubuntu-24.04

@@ -18,7 +18,7 @@ permissions: {}
 jobs:
   test:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@7362363da2b064b754533eff380455ddc25b1387
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@b375440b70679634122f322dad17bc64dd5c7694
     permissions:
       contents: read
       pull-requests: write
@@ -36,5 +36,11 @@ jobs:
         ls ../.lgtm-ci-tooling/.github/actions >/dev/null &&
         ls ../.lgtm-ci-tooling/scripts/ci >/dev/null &&
         echo "tooling checkout present" &&
-        test -z "$(git -C .. status --porcelain -- node/bun.lock node/package-lock.json)" &&
+        test -z "$(git -C .. status --porcelain -- node/bun.lock node/package-lock.json node/pnpm-lock.yaml)" &&
         echo "lockfiles untouched"
+      # Final assertion, after vitest ran through the selected manager: the
+      # whole tree is clean, so no runner wrote another manager's lockfile or
+      # installed tooling into the project (#1077).
+      post-test-command: >-
+        test -z "$(git -C .. status --porcelain)" &&
+        echo "tree clean after tests"

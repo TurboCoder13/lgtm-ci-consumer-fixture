@@ -1,0 +1,9 @@
+{
+  "name": "fixture-lighthouse",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal project carrying @lhci/cli for lgtm-ci run-lighthouse verification (#1077)",
+  "devDependencies": {
+    "@lhci/cli": "^0.15.1"
+  }
+}
