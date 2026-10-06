@@ -23,6 +23,7 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `release-tamper-hook.yml` | dispatch only | **Negative-by-design:** `version-update-script` rewrites the next lgtm-ci script in the tooling checkout. Expected to succeed on today's lgtm-ci, must fail after #849 |
 | `release-benign-hook.yml` | dispatch only | Well-behaved `version-update-script` (#849): edits `HOOK_RELEASE_INFO.txt` from `NEXT_VERSION` and `release-metadata.json`, asserts no token and read-only tooling; the edit must reach the version PR |
 | `sbom-release-upload.yml` | dispatch only | `reusable-sbom-release-upload.yml` against a disposable prerelease `vfixture-<run_id>` (#935): asserts the SBOM assets are attached via `gh api -X GET`, then deletes the release and tag. See [SBOM release upload](#sbom-release-upload) |
+| `coverage-lcov.yml` | push, PR, dispatch | Line-only LCOV (vitest `lcovonly` with FN/BR records stripped) uploaded as `node-lcov-coverage` and fed to `reusable-coverage.yml` with default inputs (#1078). Baseline main `7362363d` failed with `Conversion failed: cannot convert from lcov to json`; since `c74c9c36` the LCOV is kept as-is and branches/functions render `n/a` |
 
 ## Pinning to a candidate
 
