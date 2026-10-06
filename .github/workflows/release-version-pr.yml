@@ -46,16 +46,6 @@ jobs:
       pr-labels: fixture
       report-failures: false
       egress-policy: block
-      allowed-endpoints: >-
-        github.com:443
-        api.github.com:443
-        codeload.github.com:443
-        objects.githubusercontent.com:443
-        raw.githubusercontent.com:443
-        uploads.github.com:443
-        pipelines.actions.githubusercontent.com:443
-        pypi.org:443
-        files.pythonhosted.org:443
       runner-image: ubuntu-24.04
     secrets:
       RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
