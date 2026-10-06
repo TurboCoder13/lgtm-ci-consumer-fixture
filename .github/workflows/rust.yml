@@ -14,7 +14,7 @@ permissions: {}
 jobs:
   test:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@043fbcb6ff97b472e9f179c89514e68b1c757951
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@65db51329f0f84dacd4103ff52d71b275ae1da28
     permissions:
       actions: read
       contents: read
