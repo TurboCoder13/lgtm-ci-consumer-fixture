@@ -1,0 +1,98 @@
+# lgtm-ci external-consumer fixture — line-only LCOV through reusable-coverage
+# (lgtm-hq/lgtm-ci#1078). Calls lgtm-hq/lgtm-ci at an exact SHA with NO
+# tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+#
+#   produce  — runs the node project's vitest with the lcovonly reporter and
+#              strips the FN/FNDA/FNF/FNH/BRDA/BRF/BRH records, leaving the
+#              line-only LCOV many producers emit (c8 lines-only, gcov
+#              --no-branch, coverage.py lcov). Uploads it as
+#              `node-lcov-coverage` so the reusable's `*-coverage` download
+#              picks it up.
+#   coverage — the reusable under test, with every input at its default.
+#              Before #1078 the merge step requested a lcov->json conversion
+#              that does not exist and failed with
+#              `Conversion failed: cannot convert from lcov to json`; had it
+#              got past that, the summary step died on a `grep` for the
+#              absent BRF/FNF records under `set -euo pipefail`. After #1078
+#              the LCOV is kept as-is, line coverage is reported and branch /
+#              function coverage render as n/a.
+# On pull_request the test-summary comment is enabled so the PR-gated publish
+# job (comment, fork guard) actually executes; push behaviour is unchanged.
+---
+name: fixture-coverage-lcov
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  produce:
+    name: Produce line-only LCOV
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            registry.npmjs.org:443
+            pipelines.actions.githubusercontent.com:443
+            *.blob.core.windows.net:443
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Run vitest with the lcovonly reporter
+        shell: bash
+        working-directory: node
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npx vitest run --coverage --coverage.reporter=lcovonly \
+            --coverage.reportsDirectory=coverage
+          test -s coverage/lcov.info
+      - name: Strip branch and function records (line-only LCOV)
+        shell: bash
+        working-directory: node
+        run: |
+          set -euo pipefail
+          mkdir -p line-only
+          grep -vE '^(FN|FNDA|FNF|FNH|BRDA|BRF|BRH):' coverage/lcov.info \
+            >line-only/lcov.info
+          echo "::group::line-only/lcov.info"
+          cat line-only/lcov.info
+          echo "::endgroup::"
+          # Assert the shape under test: DA/LF/LH present, no BR/FN totals.
+          grep -q '^LF:' line-only/lcov.info
+          test "$(grep -cE '^(BRF|FNF):' line-only/lcov.info)" -eq 0
+      - name: Upload line-only LCOV
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: node-lcov-coverage
+          path: node/line-only/lcov.info
+          if-no-files-found: error
+          retention-days: 1
+
+  coverage:
+    name: Coverage (line-only LCOV)
+    needs: produce
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-coverage.yml@7362363da2b064b754533eff380455ddc25b1387
+    permissions:
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "Coverage (line-only LCOV)"
+      threshold: 50
+      publish-test-summary: ${{ github.event_name == 'pull_request' }}
+      runner-image: ubuntu-24.04
