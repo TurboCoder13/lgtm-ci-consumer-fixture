@@ -19,7 +19,7 @@ permissions: {}
 jobs:
   e2e-failing:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@edda0c426d7e21a89101105f0f4dd52e6abf45a2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@2c859faea2570c66b69b29d10af826e85c745fd7
     permissions:
       contents: read
       pull-requests: write
