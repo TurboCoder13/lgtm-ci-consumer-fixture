@@ -87,7 +87,7 @@ jobs:
     name: Coverage (line-only LCOV)
     needs: produce
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-coverage.yml@70db69c92ff86b3833d98a235683c2a69e5bfcdb
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-coverage.yml@5bc083751866aaee421f59e27776ac3526913e33
     permissions:
       contents: read
       pull-requests: write
