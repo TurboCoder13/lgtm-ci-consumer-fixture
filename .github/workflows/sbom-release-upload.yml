@@ -83,7 +83,7 @@ jobs:
     name: Upload SBOM release assets (reusable under test)
     needs: prepare
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-sbom-release-upload.yml@3c08c9aff28ebf4e7877ea922c4d1abe17176c75
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-sbom-release-upload.yml@667881ef8b5c2c1d62c794c6d79f55a228f3edeb
     permissions:
       contents: write
     with:
