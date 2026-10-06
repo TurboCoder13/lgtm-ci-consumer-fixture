@@ -44,11 +44,12 @@ jobs:
       publish-test-summary: false
       runner-image: ubuntu-24.04
       # The `playwright` preset lacks the apt mirror GitHub-hosted ubuntu-24.04
-      # runners resolve to, so `playwright install --with-deps` is refused
-      # under egress-policy: block (lgtm-hq/lgtm-ci#1103). Append it; the
-      # preset itself stays enforced (#913).
+      # runners resolve to, and storage.googleapis.com where cdn.playwright.dev
+      # redirects Chrome-for-Testing builds, so `playwright install --with-deps`
+      # is refused under egress-policy: block (lgtm-hq/lgtm-ci#1103). Append
+      # them; the preset itself stays enforced (#913).
       allowed-endpoints-mode: append
-      allowed-endpoints: azure.archive.ubuntu.com:80
+      allowed-endpoints: azure.archive.ubuntu.com:80 storage.googleapis.com:443
 
   verify-report:
     name: Verify HTML report artifact
