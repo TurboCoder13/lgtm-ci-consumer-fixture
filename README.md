@@ -79,6 +79,7 @@ fails unless exactly the expected set is present, by count and by name.
 | Dispatch | lgtm-ci pin | `artifact-prefix` | Expected | Observed |
 |---|---|---|---|---|
 | [37579013924](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37579013924) (baseline, fixture `622e021`) | `main` `b272bf2b` | none (input does not exist yet) | 4 artifacts | **failed**: `expected 4 artifacts across sibling calls, found 2: python-coverage,python-results-3.12` — `b` overwrote `a`, both legs green |
+| [37581259234](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37581259234) (fixture `ea03a21`) | PR [#1108](https://github.com/lgtm-hq/lgtm-ci/pull/1108) head `975e24cd` | `sib_a` / `sib_b` | `sib_a-coverage`, `sib_a-results-3.12`, `sib_b-coverage`, `sib_b-results-3.12` | **green**: `all 4 expected artifacts present`; both prepare jobs log `Artifact prefix: sib_a` / `sib_b` |
 FIXTURE_ROWS
 
 ## Permission negative test
