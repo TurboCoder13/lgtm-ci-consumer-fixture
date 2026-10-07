@@ -19,7 +19,7 @@ permissions: {}
 jobs:
   test:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@1a488690424e7996eac2846e5b7f2ead83a730dc
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@ac5ed8b05a1bf63f2a519afd0ae9d888210f26c2
     permissions:
       actions: read
       contents: read
