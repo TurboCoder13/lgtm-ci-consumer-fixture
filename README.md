@@ -12,7 +12,7 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `node-bun.yml` | push, PR, dispatch | Node path with bun; tooling source present next to caller source; lockfiles untouched. PR path publishes the test summary |
 | `node-npm.yml` | push, dispatch | Node path with npm (#1077) |
 | `rust.yml` | push, dispatch | Rust path; only the Rust toolchain installed; consumer ships `.config/nextest.toml` |
-| `siblings.yml` | push, dispatch | Two calls in one run produce distinct `python-results-*` names (#752) — but see the coverage caveat under [Retry convergence](#retry-convergence); target of the retry check below |
+| `siblings.yml` | push, dispatch | Two `reusable-test-python.yml` calls in one run on the **same** Python version, each with its own `artifact-prefix` (`sib_a`, `sib_b`); asserts the full artifact set exists by count and name (#752, #1091). See [Sibling artifact isolation](#sibling-artifact-isolation); target of the retry check below |
 | `retry.yml` | push, dispatch | Lone reusable call for re-running without a sibling (#803/#717) |
 | `egress.yml` | push, dispatch | Explicit allowlist denies a probe to `example.com`; preset-only job documents #913 |
 | `perms.yml` | push, dispatch | Documented-minimum caller permissions (`contents: read`, `pull-requests: write`) parse and run (#735/#736) |
@@ -59,11 +59,27 @@ Two caveats observed while doing it:
 - `gh run rerun --job` on a reusable-call job re-ran **every** job in the run
   (all jobs show `attempt=2`), not just `b`. Convergence still holds, but the
   check is "whole run re-runs onto the same names", not "one sibling re-runs".
-- Both siblings set `upload-coverage: true` and both upload the flat name
-  `python-coverage`; `b`'s overwrite silently replaces `a`'s coverage. The
-  `siblings.yml` duplicate check cannot see this because the API returns one
-  artifact per name. Only `python-results-<version>` is actually distinct
-  across siblings. Reported on lgtm-hq/lgtm-ci#1074 for #752.
+- Both siblings set `upload-coverage: true` and (before lgtm-ci #1091) both
+  uploaded the flat name `python-coverage`; `b`'s overwrite silently replaced
+  `a`'s coverage. The old duplicate check could not see this because the API
+  returns one artifact per name; only `python-results-<version>` was distinct
+  across siblings, and only because the versions differed. Reported on
+  lgtm-hq/lgtm-ci#1074 for #752; fixed by #1091, see
+  [Sibling artifact isolation](#sibling-artifact-isolation).
+
+## Sibling artifact isolation
+
+`siblings.yml` is the lgtm-hq/lgtm-ci#1091 probe (Phase 1 of #1083). Both
+legs call `reusable-test-python.yml` on Python 3.12 with `coverage: true` and
+`upload-coverage: true`, so without a namespace every artifact a leg uploads
+(`python-coverage`, `python-results-3.12`) has the same name as the other
+leg's. The `artifacts` job lists the run's artifacts with `gh api -X GET` and
+fails unless exactly the expected set is present, by count and by name.
+
+| Dispatch | lgtm-ci pin | `artifact-prefix` | Expected | Observed |
+|---|---|---|---|---|
+| [37579013924](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37579013924) (baseline, fixture `622e021`) | `main` `b272bf2b` | none (input does not exist yet) | 4 artifacts | **failed**: `expected 4 artifacts across sibling calls, found 2: python-coverage,python-results-3.12` — `b` overwrote `a`, both legs green |
+FIXTURE_ROWS
 
 ## Permission negative test
 

@@ -1,8 +1,9 @@
 # lgtm-ci external-consumer fixture — two sibling invocations in one run
 # Proves artifact namespace isolation between sibling calls (lgtm-ci #752,
 # #1091). Both legs run the SAME python-version so every artifact name a leg
-# produces would collide without a namespace; the final job asserts the full
-# expected artifact set (count and names) exists after both legs.
+# produces would collide without a namespace; each leg passes its own
+# artifact-prefix and the final job asserts the full expected artifact set
+# (count and names) exists after both legs.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
 ---
@@ -18,7 +19,7 @@ permissions: {}
 jobs:
   a:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@b272bf2bb9f16a14ba87e8dc7a48431b1c0ae221
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@975e24cd2c0f411934bc9f1f0eafb5d259a9bd36
     permissions:
       actions: read
       contents: read
@@ -31,10 +32,11 @@ jobs:
       upload-coverage: true
       publish-test-summary: false
       runner-image: ubuntu-24.04
+      artifact-prefix: sib_a
 
   b:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@b272bf2bb9f16a14ba87e8dc7a48431b1c0ae221
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@975e24cd2c0f411934bc9f1f0eafb5d259a9bd36
     permissions:
       actions: read
       contents: read
@@ -47,6 +49,7 @@ jobs:
       upload-coverage: true
       publish-test-summary: false
       runner-image: ubuntu-24.04
+      artifact-prefix: sib_b
 
   artifacts:
     needs: [a, b]
@@ -55,12 +58,14 @@ jobs:
       actions: read
     env:
       # Two legs, each uploading one results summary and one coverage
-      # artifact. The API returns one artifact per name, so a collision shows
-      # up as a short list, never as a duplicate.
+      # artifact under its own prefix. The API returns one artifact per
+      # name, so a collision shows up as a short list, never as a duplicate.
       EXPECTED_COUNT: "4"
       EXPECTED_NAMES: |
-        python-coverage
-        python-results-3.12
+        sib_a-coverage
+        sib_a-results-3.12
+        sib_b-coverage
+        sib_b-results-3.12
     steps:
       - name: Require the full artifact set across sibling calls
         env:
