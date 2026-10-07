@@ -1,0 +1,33 @@
+# lgtm-ci external-consumer fixture — private git dependency probe (#1021)
+# `python-private-dep/` declares a git dependency on a PRIVATE sibling repo
+# (TurboCoder13/trader-service) in dependency group `engine`, which this job
+# never installs, and its uv.lock is stale on purpose (version bumped without
+# `uv lock`, the shape that broke trader-service's own main). No secret is
+# passed. On lgtm-ci main before #1021 the install step runs a plain `uv sync`,
+# re-resolves the stale lock, and fails with
+#   fatal: could not read Username for 'https://github.com'
+# After #1021 the step runs `uv sync --frozen` and never touches `engine`.
+# Dispatch only. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-python-private-dep
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  test:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@2cbba297ee1bcf216621a99d762e8484b10a8835
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "Python Tests (private dep, no secret)"
+      python-version: "3.12"
+      working-directory: python-private-dep
+      coverage: false
+      publish-test-summary: false
+      runner-image: ubuntu-24.04
