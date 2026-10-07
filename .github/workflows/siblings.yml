@@ -1,5 +1,8 @@
 # lgtm-ci external-consumer fixture — two sibling invocations in one run
-# Proves artifact namespace isolation between sibling calls (lgtm-ci #752).
+# Proves artifact namespace isolation between sibling calls (lgtm-ci #752,
+# #1091). Both legs run the SAME python-version so every artifact name a leg
+# produces would collide without a namespace; the final job asserts the full
+# expected artifact set (count and names) exists after both legs.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
 ---
@@ -15,7 +18,7 @@ permissions: {}
 jobs:
   a:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@65db51329f0f84dacd4103ff52d71b275ae1da28
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@b272bf2bb9f16a14ba87e8dc7a48431b1c0ae221
     permissions:
       actions: read
       contents: read
@@ -31,14 +34,14 @@ jobs:
 
   b:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@65db51329f0f84dacd4103ff52d71b275ae1da28
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@b272bf2bb9f16a14ba87e8dc7a48431b1c0ae221
     permissions:
       actions: read
       contents: read
       pull-requests: write
     with:
       job-name: "Python Tests (b)"
-      python-version: "3.13"
+      python-version: "3.12"
       working-directory: python
       coverage: true
       upload-coverage: true
@@ -50,17 +53,32 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       actions: read
+    env:
+      # Two legs, each uploading one results summary and one coverage
+      # artifact. The API returns one artifact per name, so a collision shows
+      # up as a short list, never as a duplicate.
+      EXPECTED_COUNT: "4"
+      EXPECTED_NAMES: |
+        python-coverage
+        python-results-3.12
     steps:
-      - name: Require distinct artifact names across sibling calls
+      - name: Require the full artifact set across sibling calls
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
         run: |
           gh api -X GET "repos/$GH_REPO/actions/runs/$RUN_ID/artifacts" \
-            --jq '.artifacts[].name' | tee names.txt
-          dupes="$(sort names.txt | uniq -d)"
-          if [ -n "$dupes" ]; then
-            echo "::error::duplicate artifact names across sibling calls: $dupes"
+            --paginate --jq '.artifacts[] | select(.expired == false) | .name' \
+            | sort | tee names.txt
+          count="$(wc -l <names.txt | tr -d ' ')"
+          if [ "$count" -ne "$EXPECTED_COUNT" ]; then
+            echo "::error::expected $EXPECTED_COUNT artifacts across sibling calls, found $count: $(paste -sd, names.txt)"
             exit 1
           fi
+          printf '%s\n' "$EXPECTED_NAMES" | sed '/^$/d' | sort >expected.txt
+          if ! diff -u expected.txt names.txt; then
+            echo "::error::artifact names differ from the expected set"
+            exit 1
+          fi
+          echo "all $count expected artifacts present: $(paste -sd, names.txt)"
