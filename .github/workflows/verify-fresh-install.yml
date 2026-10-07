@@ -1,0 +1,34 @@
+# lgtm-ci external-consumer fixture — supply-chain POSITIVE probe (lgtm-ci #1096)
+#
+# Dispatch-only. The `coverage` job of rust.yml normally finds cargo-nextest
+# already in the restored cargo cache and skips the download, so it never
+# shows the digest-verified install of nextest itself. This job uses the
+# reusable's `setup-script` input to clear the cached binaries first, then
+# runs the tooling installer unchanged. Expected outcome: SUCCESS, with
+# `sha256 verified against committed CARGO_NEXTEST_SHA256_...` and
+# `... CARGO_LLVM_COV_SHA256_...` in the "Setup nextest toolchain" step log.
+# Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-verify-fresh-install
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rust-fresh-install:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@c433bd309ef6e0936623e84913fa4a287c22df9a
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "Fresh digest-verified nextest + llvm-cov install"
+      rust-toolchain: stable
+      working-directory: rust
+      setup-script: scripts/fresh/setup-rust-nextest-fresh.sh
+      coverage: true
+      publish-test-summary: false
+      runner-image: ubuntu-24.04
