@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   audit:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-security-audit.yml@c30a5a99a5a5501e9585afa5e7a3ae0357c5031d
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-security-audit.yml@cf6685ad6ae940ae2ac722b20fd9336adee56a3b
     permissions:
       contents: read
       packages: read
@@ -33,7 +33,7 @@ jobs:
     needs: audit
     if: always() && github.event_name == 'pull_request'
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-publish-security-audit-comment.yml@c30a5a99a5a5501e9585afa5e7a3ae0357c5031d
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-publish-security-audit-comment.yml@cf6685ad6ae940ae2ac722b20fd9336adee56a3b
     permissions:
       contents: read
       pull-requests: write
