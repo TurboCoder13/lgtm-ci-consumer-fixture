@@ -1,0 +1,54 @@
+# lgtm-ci external-consumer fixture — direct build-python-package path (#1087)
+# A DEFAULT actions/checkout (shallow, depth 1, credentials kept) followed by
+# `uses: lgtm-hq/lgtm-ci/.github/actions/build-python-package@<sha>` with
+# ensure-tag-on-default-branch left at its default (true). The shallow
+# checkout has no refs/remotes/origin/main, so the preflight must fetch that
+# branch itself; before lgtm-ci #1087 it died with "Default branch ref ... is
+# unavailable". verify-tag-version is only meaningful on a tag ref, so it is
+# enabled on tags and off for the branch dispatch/push runs that exercise the
+# preflight here. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-build-python-direct
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      # Deliberately no `with:` — default fetch-depth (1) and
+      # persist-credentials (true), the setup the public docs show.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Assert no lgtm-ci source in the workspace
+        run: scripts/check-no-vendoring.sh
+      - name: Assert the checkout is shallow with no origin/main ref
+        run: |
+          test "$(git rev-parse --is-shallow-repository)" = "true"
+          if git show-ref --verify --quiet refs/remotes/origin/main; then
+            echo "::error::refs/remotes/origin/main exists; this fixture needs a shallow checkout without it"
+            exit 1
+          fi
+          echo "shallow checkout confirmed; refs/remotes/origin/main absent"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: "3.12"
+      - name: build-python-package (direct)
+        id: build
+        # yamllint disable-line rule:line-length
+        uses: lgtm-hq/lgtm-ci/.github/actions/build-python-package@b272bf2bb9f16a14ba87e8dc7a48431b1c0ae221
+        with:
+          working-directory: python
+          verify-tag-version: ${{ startsWith(github.ref, 'refs/tags/') }}
+      - name: Show outputs
+        env:
+          NAME: ${{ steps.build.outputs.package-name }}
+          VERSION: ${{ steps.build.outputs.version }}
+        run: echo "built ${NAME} ${VERSION}"
