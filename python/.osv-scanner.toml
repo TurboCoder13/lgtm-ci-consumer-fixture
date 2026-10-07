@@ -1,0 +1,6 @@
+# Fixture suppression for lgtm-ci #825: the ID is not in uv.lock, so lintro's
+# probe classifies it "stale" and the PR comment must show that status.
+[[IgnoredVulns]]
+id = "GHSA-fixture-stale-0825"
+ignoreUntil = 2099-12-31
+reason = "lgtm-ci #825 fixture: deliberately stale suppression"
