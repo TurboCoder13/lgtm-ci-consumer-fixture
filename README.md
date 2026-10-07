@@ -80,6 +80,7 @@ fails unless exactly the expected set is present, by count and by name.
 |---|---|---|---|---|
 | [37579013924](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37579013924) (baseline, fixture `622e021`) | `main` `b272bf2b` | none (input does not exist yet) | 4 artifacts | **failed**: `expected 4 artifacts across sibling calls, found 2: python-coverage,python-results-3.12` — `b` overwrote `a`, both legs green |
 | [37581259234](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37581259234) (fixture `ea03a21`) | PR [#1108](https://github.com/lgtm-hq/lgtm-ci/pull/1108) head `975e24cd` | `sib_a` / `sib_b` | `sib_a-coverage`, `sib_a-results-3.12`, `sib_b-coverage`, `sib_b-results-3.12` | **green**: `all 4 expected artifacts present`; both prepare jobs log `Artifact prefix: sib_a` / `sib_b` |
+| [37582137104](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37582137104) (fixture `0da7a31`) | PR [#1108](https://github.com/lgtm-hq/lgtm-ci/pull/1108) head `04c6b491` (after review fixes) | `sib_a` / `sib_b` | same four names | **green**: `all 4 expected artifacts present` |
 FIXTURE_ROWS
 
 ## Permission negative test
