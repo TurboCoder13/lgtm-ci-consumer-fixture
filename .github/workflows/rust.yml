@@ -1,6 +1,10 @@
 # lgtm-ci external-consumer fixture — Rust test path (reusable-rust-test)
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+#
+# `test` installs cargo-nextest; `coverage` additionally installs
+# cargo-llvm-cov. Both come from digest-verified release archives
+# (lgtm-ci #1096), so this workflow is the positive proof for both installs.
 ---
 name: fixture-rust
 
@@ -14,7 +18,7 @@ permissions: {}
 jobs:
   test:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@65db51329f0f84dacd4103ff52d71b275ae1da28
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@0000000000000000000000000000000000000000
     permissions:
       actions: read
       contents: read
@@ -24,5 +28,20 @@ jobs:
       rust-toolchain: stable
       working-directory: rust
       coverage: false
+      publish-test-summary: false
+      runner-image: ubuntu-24.04
+
+  coverage:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@0000000000000000000000000000000000000000
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "Rust Coverage"
+      rust-toolchain: stable
+      working-directory: rust
+      coverage: true
       publish-test-summary: false
       runner-image: ubuntu-24.04

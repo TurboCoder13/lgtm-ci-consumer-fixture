@@ -1,0 +1,53 @@
+# lgtm-ci external-consumer fixture — supply-chain NEGATIVE probe (lgtm-ci #1096)
+#
+# Dispatch-only. Both jobs are EXPECTED TO FAIL: each one calls a reusable with
+# a deliberately wrong committed digest injected through the reusable's own
+# caller-script input (no hidden hook in lgtm-ci):
+#
+#   rust-wrong-digest  reusable-rust-test `setup-script` -> a wrapper that
+#                      exports CARGO_NEXTEST_SHA256_X86_64_UNKNOWN_LINUX_GNU=0…0
+#                      and execs the tooling setup-rust-nextest.sh.
+#   osv-wrong-digest   reusable-vuln-suppression-check `install-script` -> a
+#                      wrapper that exports OSV_SCANNER_SHA256_LINUX_AMD64=0…0
+#                      and execs the tooling install-osv-scanner.sh.
+#
+# A green run of this workflow would mean the digest gate is broken. The
+# evidence is the `::error title=digest mismatch::` annotation in each job.
+# Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-verify-negative
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rust-wrong-digest:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@0000000000000000000000000000000000000000
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    with:
+      job-name: "NEGATIVE nextest wrong digest (expected failure)"
+      rust-toolchain: stable
+      working-directory: rust
+      setup-script: scripts/negative/setup-rust-nextest-wrong-digest.sh
+      coverage: false
+      publish-test-summary: false
+      runner-image: ubuntu-24.04
+
+  osv-wrong-digest:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-vuln-suppression-check.yml@0000000000000000000000000000000000000000
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      job-name: "NEGATIVE osv-scanner wrong digest (expected failure)"
+      install-script: scripts/negative/install-osv-scanner-wrong-digest.sh
+      runner-image: ubuntu-24.04
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

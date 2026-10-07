@@ -1,0 +1,29 @@
+# lgtm-ci external-consumer fixture — osv-scanner install path
+# (reusable-vuln-suppression-check). Calls lgtm-hq/lgtm-ci at an exact SHA with
+# NO tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+#
+# The fixture ships no .osv-scanner.toml, so the suppression check itself is a
+# no-op; the job exists to prove the digest-verified osv-scanner install
+# (lgtm-ci #1096) stays green on a plain ubuntu runner under block-mode egress.
+---
+name: fixture-vuln-suppression
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  check:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-vuln-suppression-check.yml@0000000000000000000000000000000000000000
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      job-name: "Vulnerability Suppression Check"
+      runner-image: ubuntu-24.04
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
