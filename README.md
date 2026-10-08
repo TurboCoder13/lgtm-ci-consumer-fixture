@@ -181,3 +181,5 @@ Results (2026-10-06):
 
 The first run against lgtm-ci `main` is expected to fail; the run URLs are
 recorded on lgtm-hq/lgtm-ci#1074 so that later fixes have a before/after.
+
+# lgtm-ci #1080 PR-event comparison probe (2026-10-08T09:25:28Z)
