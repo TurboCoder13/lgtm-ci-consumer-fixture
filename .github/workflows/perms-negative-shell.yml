@@ -1,0 +1,32 @@
+# lgtm-ci external-consumer fixture — NEGATIVE permission test for the shell
+# facade (lgtm-ci #1081). Grants exactly what readonly.yml grants the
+# read-only variant (actions: read, contents: read) but calls the facade
+# reusable-test-shell.yml with publish-test-summary enabled. The facade's
+# publish job declares pull-requests: write, so GitHub must reject the run at
+# parse time: expected startup_failure, before any job (and so before any
+# publish step) starts. A run that starts is a finding for #1081.
+# workflow_dispatch only: a run that is expected to fail must not redden main.
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-perms-negative-shell
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  facade-without-publish-scope:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-shell.yml@524235714721697ff0f1e3c4bb8feb207dd991f2
+    permissions:
+      actions: read
+      contents: read
+    with:
+      job-name: "Shell Tests (facade, no pull-requests: write)"
+      working-directory: shell
+      test-path: tests/bats
+      coverage: false
+      publish-test-summary: true
+      runner-image: ubuntu-24.04
