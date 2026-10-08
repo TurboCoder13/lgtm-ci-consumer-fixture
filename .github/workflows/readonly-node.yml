@@ -1,5 +1,5 @@
-# lgtm-ci external-consumer fixture — read-only variants (lgtm-ci #1081)
-# Each job calls a generated read-only variant (reusable-*-run.yml) granting
+# lgtm-ci external-consumer fixture — read-only Node variant (lgtm-ci #1081)
+# Calls the generated read-only variant reusable-test-node-run.yml granting
 # only read scopes: no pull-requests: write. GitHub validates the called
 # workflow's permission union at parse time, so this run starting at all
 # proves the variant's union is read-only; the check job then asserts the
@@ -8,7 +8,7 @@
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
 ---
-name: fixture-readonly
+name: fixture-readonly-node
 
 "on":
   workflow_dispatch:
@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   node:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node-run.yml@bdb2807f341b4b9e56e5cbd89c1b7b8901284764
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node-run.yml@16aa956ba3ef2680c0b521ea0299b4282fedbf89
     permissions:
       actions: read
       contents: read
