@@ -9,7 +9,9 @@
 # On a branch event (dispatch/push on main) actions/checkout does create
 # refs/remotes/origin/main, so the ref is deleted first to reproduce the
 # tag-event shape from a main dispatch. verify-tag-version stays off: fixture
-# tags do not track python/pyproject.toml's version. Re-pin with:
+# tags do not track python/pyproject.toml's version. On non-main branches
+# (the lgtm-ci external canary's `canary/<sha>`) the on-default-branch check
+# is off, since such a commit is never on main. Re-pin with:
 # scripts/pin.sh <sha>
 ---
 name: fixture-build-python-direct
@@ -58,6 +60,11 @@ jobs:
         with:
           working-directory: python
           verify-tag-version: "false"
+          # The lgtm-ci external canary runs this probe on a throwaway
+          # `canary/<sha>` branch whose commit is, by construction, not on
+          # main; there the preflight would correctly abort. Enforce the
+          # on-default-branch check only where it can hold (main and tags).
+          ensure-tag-on-default-branch: ${{ startsWith(github.ref, 'refs/tags/') || github.ref_name == 'main' }}
       - name: Show outputs
         env:
           NAME: ${{ steps.build.outputs.package-name }}
