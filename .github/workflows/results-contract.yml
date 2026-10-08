@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   python:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@f78a813e5c71e6bee544b60407ac110325bc7594
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@6e620635b431bd77c262da1f0686724e75df5157
     permissions:
       actions: read
       contents: read
@@ -37,7 +37,7 @@ jobs:
 
   python-compat:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@f78a813e5c71e6bee544b60407ac110325bc7594
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@6e620635b431bd77c262da1f0686724e75df5157
     permissions:
       actions: read
       contents: read
@@ -53,7 +53,7 @@ jobs:
 
   node:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@f78a813e5c71e6bee544b60407ac110325bc7594
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@6e620635b431bd77c262da1f0686724e75df5157
     permissions:
       actions: read
       contents: read
@@ -70,7 +70,7 @@ jobs:
 
   rust:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@f78a813e5c71e6bee544b60407ac110325bc7594
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@6e620635b431bd77c262da1f0686724e75df5157
     permissions:
       actions: read
       contents: read
@@ -86,7 +86,7 @@ jobs:
 
   playwright:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@f78a813e5c71e6bee544b60407ac110325bc7594
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@6e620635b431bd77c262da1f0686724e75df5157
     permissions:
       contents: read
       pull-requests: write
@@ -110,7 +110,7 @@ jobs:
     # The required-check reusable reads the documents too (lgtm-ci #1080).
     needs: [python, python-compat, node, rust]
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-required-check.yml@f78a813e5c71e6bee544b60407ac110325bc7594
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-required-check.yml@6e620635b431bd77c262da1f0686724e75df5157
     permissions:
       contents: read
     with:
@@ -144,7 +144,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: lgtm-hq/lgtm-ci
-          ref: f78a813e5c71e6bee544b60407ac110325bc7594 # lgtm-ci-pin
+          ref: 6e620635b431bd77c262da1f0686724e75df5157 # lgtm-ci-pin
           path: .lgtm-ci-tooling
           sparse-checkout: |
             schemas/
