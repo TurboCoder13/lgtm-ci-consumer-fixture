@@ -1,0 +1,61 @@
+# lgtm-ci external-consumer fixture — read-only Docker validate entry
+# (lgtm-ci #1081).
+# Calls reusable-docker-multiplatform-validate.yml with contents: read only:
+# native amd64 and arm64 builds without pushing, the local smoke test and a
+# Trivy scan. The run starting at all proves the union is read-only; the check
+# job asserts both legs produced their trivy-sarif-<slug> artifact, which the
+# facade would upload to code scanning. The facade with the same grant and
+# push: true is perms-negative-docker.yml (expected startup_failure).
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-readonly-docker
+
+"on":
+  workflow_dispatch:
+  push:
+    # split-1081-*: pre-merge proof only; dropped when landing on main.
+    branches: [main, split-1081-*]
+
+permissions: {}
+
+jobs:
+  validate:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform-validate.yml@90e16f1141ad8673700f6c75ca5e80db79690679
+    permissions:
+      contents: read
+    with:
+      matrix: >-
+        [{"platform":"linux/amd64","slug":"linux-amd64",
+        "runner":"ubuntu-24.04","qemu":false},
+        {"platform":"linux/arm64","slug":"linux-arm64",
+        "runner":"ubuntu-24.04-arm","qemu":false}]
+      context: docker
+      file: docker/Dockerfile
+      image-name: turbocoder13/lgtm-ci-consumer-fixture/fixture-image
+      validate-on-pr: true
+      smoke-test: "cat /ok"
+      scan: true
+
+  check:
+    needs: [validate]
+    if: always()
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+    steps:
+      - name: Assert the build passed and both SARIF artifacts exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.validate.result }}
+        run: |
+          echo "validate: result=$RESULT"
+          test "$RESULT" = success
+          run_url="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          names="$(gh api -X GET "$run_url/artifacts" \
+            --jq '.artifacts[].name')"
+          echo "$names"
+          for slug in linux-amd64 linux-arm64; do
+            grep -qx "trivy-sarif-$slug" <<<"$names"
+          done

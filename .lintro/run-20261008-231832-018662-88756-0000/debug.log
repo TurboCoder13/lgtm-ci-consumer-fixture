@@ -1,0 +1,200 @@
+2026-10-09 01:18:32 | DEBUG    | lintro.config.config_loader:load_config:1273 | Loaded global config from: /Users/eiteldagnin/.lintro-config.yaml
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_all_tools:644 | Discovering tools...
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: actionlint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: actionlint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: astro-check (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: astro_check.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: bandit (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: bandit.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: black (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: black.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: buf (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: buf.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: cargo_audit (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: cargo_audit.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: cargo_deny (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: cargo_deny.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: checkov (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: checkov.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: clippy (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: clippy.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: commitlint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: commitlint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: cppcheck (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: cppcheck.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: dotenv_linter (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: dotenv_linter.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: gitleaks (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: gitleaks.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: golangci_lint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: golangci_lint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: hadolint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: hadolint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: html_validate (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: html_validate.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: idiom-review (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: idiom_review.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: import-linter (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: import_linter.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: markdownlint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: markdownlint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: mypy (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: mypy.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: osv_scanner (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: osv_scanner.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: oxfmt (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: oxfmt.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: oxlint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: oxlint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: pip_audit (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: pip_audit.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: prettier (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: prettier.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: pydoclint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: pydoclint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: pylint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: pylint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: pytest (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: pytest.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: ruff (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: ruff.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: rustfmt (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: rustfmt.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: semgrep (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: semgrep.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: shellcheck (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: shellcheck.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: shfmt (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: shfmt.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: spectral (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: spectral.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: sqlfluff (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: sqlfluff.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: stylelint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: stylelint.definition
+2026-10-09 01:18:32 | WARNING  | lintro.tools.core.node_fallback:notify_registry_fallback_selected:201 | No project-local or PATH install of svelte-check found; falling back to `bunx svelte-check@4.7.6`, which needs registry access.
+Lintro prefers a project-local install of svelte-check. Add it to this project:
+    bun add -D svelte-check@4.7.6
+    npm install -D svelte-check@4.7.6
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: svelte-check (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: svelte_check.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: taplo (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: taplo.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: trufflehog (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: trufflehog.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: ts_checker.base
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: ts_checker.command
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: ts_checker.execution
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: tsc (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: tsc.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: typos (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: typos.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: vale (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: vale.definition
+2026-10-09 01:18:32 | WARNING  | lintro.tools.core.node_fallback:notify_registry_fallback_selected:201 | No project-local or PATH install of vue-tsc found; falling back to `bunx vue-tsc@3.3.11`, which needs registry access.
+Lintro prefers a project-local install of vue-tsc. Add it to this project:
+    bun add -D vue-tsc@3.3.11
+    npm install -D vue-tsc@3.3.11
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: vue-tsc (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: vue_tsc.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.registry:register:110 | Registered tool: yamllint (origin=builtin)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:197 | Loaded builtin tool: yamllint.definition
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_builtin_tools:204 | Loaded 47 builtin tool definitions
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.discovery:discover_external_plugins:518 | External plugin loading is disabled (default). Set LINTRO_ENABLE_EXTERNAL_PLUGINS=1 or configure a [tool.lintro] plugins allowlist to enable it.
+2026-10-09 01:18:32 | INFO     | lintro.plugins.discovery:discover_all_tools:655 | Tool discovery complete: 47 builtin, 0 external
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.execution.parallel_executor:run_tools_parallel:144 | Parallel execution batches: [['actionlint', 'yamllint']]
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.async_tool_executor:run_tool_async:121 | Starting async execution of actionlint
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.base:_prepare_execution:572 | [actionlint] Preparing execution for 3 input paths
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.async_tool_executor:run_tool_async:121 | Starting async execution of yamllint
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.base:_prepare_execution:572 | [yamllint] Preparing execution for 3 input paths
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.file_discovery:discover_files:85 | File discovery: 3 files matching ['*.yml', '*.yaml']
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.execution_preparation:prepare_execution:311 | Files to process: ['/private/tmp/lgtm-1081/fixture-wt/.github/workflows/docker-publish.yml', '/private/tmp/lgtm-1081/fixture-wt/.github/workflows/perms-negative-docker.yml', '/private/tmp/lgtm-1081/fixture-wt/.github/workflows/readonly-docker.yml']
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.file_discovery:discover_files:85 | File discovery: 3 files matching ['*.yml', '*.yaml', '.yamllint', '.yamllint.yml', '.yamllint.yaml']
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.execution_preparation:prepare_execution:311 | Files to process: ['/private/tmp/lgtm-1081/fixture-wt/.github/workflows/docker-publish.yml', '/private/tmp/lgtm-1081/fixture-wt/.github/workflows/perms-negative-docker.yml', '/private/tmp/lgtm-1081/fixture-wt/.github/workflows/readonly-docker.yml']
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.core.command_builders:resolve_venv_tool_command:232 | Running in venv (/Users/eiteldagnin/.cache/uv/archive-v0/o6U6We3RbPXwvWUj), yamllint not in venv scripts, found in PATH: /usr/local/bin/yamllint
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.execution_preparation:prepare_execution:339 | Prepared execution: 3 files, cwd=/private/tmp/lgtm-1081/fixture-wt, timeout=30.0s
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.base:_prepare_execution:591 | [actionlint] Ready: 3 files, timeout=30.0s
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.subprocess_executor:run_subprocess:212 | Running subprocess: actionlint /private/tmp/lgtm-1081/fixture-wt/.github/workflows/docker-publish.yml (timeout=30.0s, cwd=None)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.subprocess_executor:run_subprocess:212 | Running subprocess: actionlint /private/tmp/lgtm-1081/fixture-wt/.github/workflows/perms-negative-docker.yml (timeout=30.0s, cwd=None)
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.subprocess_executor:run_subprocess:212 | Running subprocess: actionlint /private/tmp/lgtm-1081/fixture-wt/.github/workflows/readonly-docker.yml (timeout=30.0s, cwd=None)
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.async_tool_executor:run_tool_async:128 | Completed async execution of actionlint
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.execution_preparation:prepare_execution:339 | Prepared execution: 3 files, cwd=/private/tmp/lgtm-1081/fixture-wt, timeout=15.0s
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.base:_prepare_execution:591 | [yamllint] Ready: 3 files, timeout=15.0s
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:check:394 | [YamllintPlugin] Discovered 3 files matching patterns: ['*.yml', '*.yaml', '.yamllint', '.yamllint.yml', '.yamllint.yaml']
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:check:398 | [YamllintPlugin] Exclude patterns applied: ['.git', '.hg', '.svn', '__pycache__/', '.pytest_cache/', '.ruff_cache/', '.mypy_cache/', '.cache/', '.terragrunt-cache/', '.lintro-cache/', '*.pyc', '*.pyo', '*.pyd', '.coverage', 'htmlcov', 'dist', 'build', '*.egg-info', '.terraform']
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:check:402 | [YamllintPlugin] Files to check (first 10): ['/private/tmp/lgtm-1081/fixture-wt/.github/workflows/docker-publish.yml', '/private/tmp/lgtm-1081/fixture-wt/.github/workflows/perms-negative-docker.yml', '/private/tmp/lgtm-1081/fixture-wt/.github/workflows/readonly-docker.yml']
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.core.command_builders:resolve_venv_tool_command:232 | Running in venv (/Users/eiteldagnin/.cache/uv/archive-v0/o6U6We3RbPXwvWUj), yamllint not in venv scripts, found in PATH: /usr/local/bin/yamllint
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:_process_single_file:314 | [YamllintPlugin] Processing file: /private/tmp/lgtm-1081/fixture-wt/.github/workflows/docker-publish.yml
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:_process_single_file:315 | [YamllintPlugin] Command: /usr/local/bin/yamllint --format parsable /private/tmp/lgtm-1081/fixture-wt/.github/workflows/docker-publish.yml
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.subprocess_executor:run_subprocess:212 | Running subprocess: /usr/local/bin/yamllint --format parsable /private/tmp/lgtm-1081/fixture-wt/.github/workflows/docker-publish.yml (timeout=15.0s, cwd=/private/tmp/lgtm-1081/fixture-wt/.github/workflows)
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.core.command_builders:resolve_venv_tool_command:232 | Running in venv (/Users/eiteldagnin/.cache/uv/archive-v0/o6U6We3RbPXwvWUj), yamllint not in venv scripts, found in PATH: /usr/local/bin/yamllint
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:_process_single_file:314 | [YamllintPlugin] Processing file: /private/tmp/lgtm-1081/fixture-wt/.github/workflows/perms-negative-docker.yml
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:_process_single_file:315 | [YamllintPlugin] Command: /usr/local/bin/yamllint --format parsable /private/tmp/lgtm-1081/fixture-wt/.github/workflows/perms-negative-docker.yml
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.subprocess_executor:run_subprocess:212 | Running subprocess: /usr/local/bin/yamllint --format parsable /private/tmp/lgtm-1081/fixture-wt/.github/workflows/perms-negative-docker.yml (timeout=15.0s, cwd=/private/tmp/lgtm-1081/fixture-wt/.github/workflows)
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.core.command_builders:resolve_venv_tool_command:232 | Running in venv (/Users/eiteldagnin/.cache/uv/archive-v0/o6U6We3RbPXwvWUj), yamllint not in venv scripts, found in PATH: /usr/local/bin/yamllint
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:_process_single_file:314 | [YamllintPlugin] Processing file: /private/tmp/lgtm-1081/fixture-wt/.github/workflows/readonly-docker.yml
+2026-10-09 01:18:32 | DEBUG    | lintro.tools.yamllint.definition:_process_single_file:315 | [YamllintPlugin] Command: /usr/local/bin/yamllint --format parsable /private/tmp/lgtm-1081/fixture-wt/.github/workflows/readonly-docker.yml
+2026-10-09 01:18:32 | DEBUG    | lintro.plugins.subprocess_executor:run_subprocess:212 | Running subprocess: /usr/local/bin/yamllint --format parsable /private/tmp/lgtm-1081/fixture-wt/.github/workflows/readonly-docker.yml (timeout=15.0s, cwd=/private/tmp/lgtm-1081/fixture-wt/.github/workflows)
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.async_tool_executor:run_tool_async:128 | Completed async execution of yamllint
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.result_formatters:print_tool_result:303 | Tool actionlint produced no output
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.result_formatters:print_tool_result:301 | Tool yamllint output: 4847 characters
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.config:load_pyproject:101 | No pyproject.toml found in current directory or parents
+2026-10-09 01:18:32 | DEBUG    | lintro.utils.console.logger:print_execution_summary:305 | check completed with 7 total issues and failures
