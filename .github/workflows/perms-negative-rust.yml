@@ -1,0 +1,32 @@
+# lgtm-ci external-consumer fixture — NEGATIVE permission test for the Rust
+# facade (lgtm-ci #1081). Grants exactly what readonly-rust.yml grants the
+# read-only variant (actions: read, contents: read) but calls the facade
+# reusable-rust-test.yml with publish-test-summary enabled. The facade's
+# publish job declares pull-requests: write, so GitHub must reject the run at
+# parse time: expected startup_failure, before any job (and so before any
+# publish step) starts. A run that starts is a finding for #1081.
+# workflow_dispatch only: a run that is expected to fail must not redden main.
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-perms-negative-rust
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  facade-without-publish-scope:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@00a4db8bf8bc9f0eb3ec7798a9913eb26d5271ab
+    permissions:
+      actions: read
+      contents: read
+    with:
+      job-name: "Rust Tests (facade, no pull-requests: write)"
+      rust-toolchain: stable
+      working-directory: rust
+      coverage: false
+      publish-test-summary: true
+      runner-image: ubuntu-24.04
