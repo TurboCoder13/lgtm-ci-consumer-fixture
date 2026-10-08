@@ -13,7 +13,8 @@ name: fixture-readonly
 "on":
   workflow_dispatch:
   push:
-    branches: [main]
+    # split-1081-*: pre-merge proof only; dropped when landing on main.
+    branches: [main, split-1081-*]
 
 permissions: {}
 

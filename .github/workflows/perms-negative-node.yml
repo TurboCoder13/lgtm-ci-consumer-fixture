@@ -13,6 +13,9 @@ name: fixture-perms-negative-node
 
 "on":
   workflow_dispatch:
+  # Pre-merge proof on the split branch only; dropped when landing on main.
+  push:
+    branches: [split-1081-*]
 
 permissions: {}
 
