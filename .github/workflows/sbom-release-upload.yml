@@ -26,8 +26,12 @@ name: fixture-sbom-release-upload
 
 permissions: {}
 
+# Per ref: every run uses its own `vfixture-<run_id>` prerelease, so runs on
+# different refs never touch each other's release. A repository-wide group
+# let concurrent lgtm-ci canaries (one `canary/<sha>` ref each) supersede each
+# other's queued run, which then concluded `cancelled` (lgtm-ci #1134).
 concurrency:
-  group: sbom-release-upload-${{ github.repository }}
+  group: sbom-release-upload-${{ github.ref }}
   cancel-in-progress: false
 
 env:
