@@ -147,10 +147,13 @@ jobs:
           ref: f29da756f9f1673d6d10c5b956480807e5dc8a9b
           path: .lgtm-ci-tooling
           sparse-checkout: |
-            schemas
-            scripts/ci/lib
+            schemas/
+            scripts/ci/
           sparse-checkout-cone-mode: true
           persist-credentials: false
+      - name: Show tooling checkout
+        shell: bash
+        run: find .lgtm-ci-tooling -maxdepth 4 -type d | sort | head -40
       - name: List run artifacts (gh api -X GET)
         shell: bash
         env:
