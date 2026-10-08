@@ -18,7 +18,7 @@ permissions: {}
 jobs:
   check:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-vuln-suppression-check.yml@0e8665714854362b3be42054b97c28321935c641
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-vuln-suppression-check.yml@249fc90bab930a2ed426de44681c2868c25b47cc
     permissions:
       contents: write
       pull-requests: write
