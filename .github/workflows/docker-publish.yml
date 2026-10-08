@@ -45,6 +45,10 @@ jobs:
       push: true
       smoke-test: "cat /ok"
       scan: true
+      # Probe (#1081): hosts the docker preset may be missing.
+      allowed-endpoints-mode: append
+      allowed-endpoints: >-
+        get.trivy.dev:443 mirror.gcr.io:443 token.actions.githubusercontent.com:443 fulcio.sigstore.dev:443 rekor.sigstore.dev:443 timestamp.sigstore.dev:443 tuf-repo-cdn.sigstore.dev:443
 
   check:
     needs: [publish]
