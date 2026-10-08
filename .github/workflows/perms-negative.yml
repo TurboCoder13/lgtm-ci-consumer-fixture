@@ -7,6 +7,8 @@
 # starts (and passes or fails inside a job), the documented minimum in
 # lgtm-ci is wrong and that is a finding for #735/#736.
 # workflow_dispatch only: a run that is expected to fail must not redden main.
+# Dispatched by perms-negative-probe.yml, which asserts the failure and deletes this
+# run after a pass, so an expected failure does not stay red on the Actions page.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
 ---

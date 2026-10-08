@@ -13,6 +13,8 @@
 #
 # A green run of this workflow would mean the digest gate is broken. The
 # evidence is the `::error title=digest mismatch::` annotation in each job.
+# Dispatched by verify-negative-probe.yml, which asserts the failure and deletes this
+# run after a pass, so an expected failure does not stay red on the Actions page.
 # Re-pin with: scripts/pin.sh <sha>
 ---
 name: fixture-verify-negative

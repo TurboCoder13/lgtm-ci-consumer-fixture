@@ -1,0 +1,32 @@
+# lgtm-ci external-consumer fixture — probe for verify-negative.yml
+# (lgtm-ci #1083). Dispatches verify-negative.yml on this run's ref and is
+# green only when it failed as designed (see negative-probe.yml and
+# scripts/negative/probe.sh). The canary dispatches this probe; it never
+# dispatches verify-negative.yml directly.
+---
+name: fixture-verify-negative-probe
+
+"on":
+  workflow_dispatch:
+    inputs:
+      keep-negative-run:
+        description: Keep the verify-negative run after a passing probe (default deletes it)
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: verify-negative-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    uses: ./.github/workflows/negative-probe.yml
+    permissions:
+      actions: write
+      checks: read
+      contents: read
+    with:
+      negative: verify-negative.yml
+      keep-negative-run: ${{ inputs.keep-negative-run || false }}

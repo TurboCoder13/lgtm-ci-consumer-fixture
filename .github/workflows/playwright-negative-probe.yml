@@ -1,0 +1,32 @@
+# lgtm-ci external-consumer fixture — probe for playwright-negative.yml
+# (lgtm-ci #1083). Dispatches playwright-negative.yml on this run's ref and is
+# green only when it failed as designed (see negative-probe.yml and
+# scripts/negative/probe.sh). The canary dispatches this probe; it never
+# dispatches playwright-negative.yml directly.
+---
+name: fixture-playwright-negative-probe
+
+"on":
+  workflow_dispatch:
+    inputs:
+      keep-negative-run:
+        description: Keep the playwright-negative run after a passing probe (default deletes it)
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: playwright-negative-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    uses: ./.github/workflows/negative-probe.yml
+    permissions:
+      actions: write
+      checks: read
+      contents: read
+    with:
+      negative: playwright-negative.yml
+      keep-negative-run: ${{ inputs.keep-negative-run || false }}

@@ -6,6 +6,8 @@
 # held only playwright-results.json, because the second --reporter flag
 # discarded the html reporter.
 # workflow_dispatch only: a run that is expected to fail must not redden main.
+# Dispatched by playwright-negative-probe.yml, which asserts the failure and deletes this
+# run after a pass, so an expected failure does not stay red on the Actions page.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
 ---
