@@ -16,7 +16,7 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `retry.yml` | push, dispatch | Lone reusable call for re-running without a sibling (#803/#717) |
 | `egress.yml` | push, dispatch | Explicit allowlist denies a probe to `example.com`; preset-only job documents #913 |
 | `perms.yml` | push, dispatch | Documented-minimum caller permissions (`contents: read`, `pull-requests: write`) parse and run (#735/#736) |
-| `perms-negative.yml` | dispatch only | **Negative:** `contents: read` alone. Expected `startup_failure` at parse time; observed: see [Permission negative test](#permission-negative-test) |
+| `perms-negative.yml` | dispatch only (by its probe) | **Negative:** `contents: read` alone. Expected `startup_failure` at parse time; observed: see [Permission negative test](#permission-negative-test) |
 | `actions-direct.yml` | push, dispatch | Direct `uses: lgtm-hq/lgtm-ci/.github/actions/run-*@sha` path (#1075) |
 | `app-token-probe.yml` | dispatch only | Reach of a GitHub App token minted as the release reusables do (`owner` only, no `repositories:`): single-repo install sees exactly one repo; scoped variant works; sibling repo refused (#849) |
 | `release-version-pr.yml` | dispatch only | `reusable-release-version-pr` from outside the org: App token, python ecosystem under `python/`, opens a version PR (closed by hand). See [Release paths](#release-paths) |
@@ -26,7 +26,9 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `python-private-dep.yml` | dispatch only | **Negative-by-design on pre-#1021 lgtm-ci:** `python-private-dep/` has a git dependency on the private sibling `trader-service` in group `engine` (never installed) and a deliberately stale `uv.lock` (version bumped without `uv lock`). No secret passed. Plain `uv sync` re-resolves and dies on `could not read Username for 'https://github.com'`; `uv sync --frozen` (lgtm-ci #1021) installs the lock verbatim and passes |
 | `coverage-lcov.yml` | push, PR, dispatch | Line-only LCOV (vitest `lcovonly` with FN/BR records stripped) uploaded as `node-lcov-coverage` and fed to `reusable-coverage.yml` with default inputs (#1078). Baseline main `7362363d` failed with `Conversion failed: cannot convert from lcov to json`; since `c74c9c36` the LCOV is kept as-is and branches/functions render `n/a` |
 | `playwright.yml` | push, dispatch | `reusable-test-e2e-playwright.yml` with `package-manager: bun` on the `playwright/` project, then `verify-report` lists the run's artifacts via `gh api -X GET` and asserts `playwright-report/index.html` is inside the downloaded artifact (#804). Baseline main `c74c9c36`: green but **0 artifacts**, `--reporter=html --reporter=json`, `[[: 950.264: syntax error`; since `65db5132` (PR #1104) the artifact holds HTML + JSON + JUnit on every run (`upload-report-when: always`). Appends `azure.archive.ubuntu.com:80 storage.googleapis.com:443` to the `playwright` preset (#1103) |
-| `playwright-negative.yml` | dispatch only | **Negative-by-design:** project `chromium-failing` always fails; the verdict is `verify-report`, which asserts the failure-path artifact contains `index.html`. Baseline: artifact held only `playwright-results.json`; since #1104 the HTML report is present |
+| `playwright-negative.yml` | dispatch only (by its probe) | **Negative-by-design:** project `chromium-failing` always fails; the verdict is `verify-report`, which asserts the failure-path artifact contains `index.html`. Baseline: artifact held only `playwright-results.json`; since #1104 the HTML report is present |
+| `verify-negative.yml` | dispatch only (by its probe) | **Negative-by-design:** wrong committed digests for cargo-nextest and osv-scanner injected through the reusables' caller-script inputs; both jobs must be refused with a `digest mismatch` annotation (#1096) |
+| `perms-negative-probe.yml`, `playwright-negative-probe.yml`, `verify-negative-probe.yml` | dispatch only | Dispatch their negative on the same ref and assert it failed **as designed**; green when it did, red when it passed or failed for another reason. See [Negative probes](#negative-probes) |
 
 ## Pinning to a candidate
 
@@ -35,8 +37,47 @@ scripts/pin.sh <lgtm-ci-sha>   # rewrites every uses: line and prints the result
 ```
 
 Commit and push to `main`, or dispatch each workflow by hand. Every workflow
-runs on `workflow_dispatch`; all but `perms-negative.yml` also run on push to
+runs on `workflow_dispatch`; the push-path workflows also run on push to
 `main`, and `python.yml` / `node-bun.yml` run on pull requests to `main`.
+Dispatch a negative through its `*-probe.yml`, not directly, so an expected
+failure does not stay red.
+
+## Negative probes
+
+A negative-by-design run is red on the Actions page even when it proves what
+it should. It cannot be turned green from inside: a job that calls a reusable
+workflow does not accept `continue-on-error`, so a failed call fails the run,
+and `perms-negative.yml` is rejected at parse time (`startup_failure`), before
+any job of its own could look at the result. Each negative therefore has a
+probe, `<name>-probe.yml`, which calls the shared `negative-probe.yml`:
+`scripts/negative/probe.sh` dispatches the negative on the probe's ref (the
+dispatch API returns the run id), waits for it, and checks:
+
+| Negative | Run conclusion | Job evidence |
+|---|---|---|
+| `perms-negative.yml` | `startup_failure` | zero jobs created |
+| `playwright-negative.yml` | `failure` | `e2e-failing / Playwright E2E …` failed; `Verify failure-path HTML report artifact` succeeded |
+| `verify-negative.yml` | `failure` | both `NEGATIVE … wrong digest` jobs failed **and** raised the `digest mismatch` annotation |
+
+When every check holds, the probe writes the negative's jobs and annotations
+to its job summary and the `negative-evidence` artifact, **deletes the red
+negative run**, and is green. Any other outcome (the negative passed, failed
+for a different reason, or never completed) fails the probe and keeps the
+negative run for inspection. Dispatch a probe with `keep-negative-run: true`
+to keep the negative run after a pass.
+
+The external canary in lgtm-ci dispatches the probes, not the negatives: the
+negatives appear in its table as `via_probe`, and each probe is reported
+against an expected `success`.
+
+First run (fixture branch `probe-test`, lgtm-ci `v0.76.0` `2134b700`,
+2026-10-08): `perms-negative-probe`
+[37836376566](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37836376566),
+`playwright-negative-probe`
+[37836381452](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37836381452)
+and `verify-negative-probe`
+[37836386618](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37836386618)
+all green; each negative concluded as expected and its run was deleted.
 
 ## Retry convergence
 
