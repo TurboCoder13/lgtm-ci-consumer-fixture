@@ -1,0 +1,51 @@
+# lgtm-ci external-consumer fixture — read-only shell variant (lgtm-ci #1081)
+# Calls the generated read-only variant reusable-test-shell-run.yml granting
+# only read scopes: no pull-requests: write. GitHub validates the called
+# workflow's permission union at parse time, so this run starting at all
+# proves the variant's union is read-only; the check job then asserts the
+# variant still ran the tests and reported their outputs. The facade with the
+# same grants is perms-negative-shell.yml (expected startup_failure).
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-readonly-shell
+
+"on":
+  workflow_dispatch:
+  push:
+    # split-1081-*: pre-merge proof only; dropped when landing on main.
+    branches: [main, split-1081-*]
+
+permissions: {}
+
+jobs:
+  shell:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-shell-run.yml@cbc307def6e9d165213e46a0df4d02db266a1a80
+    permissions:
+      actions: read
+      contents: read
+    with:
+      job-name: "Shell Tests (read-only)"
+      working-directory: shell
+      test-path: tests/bats
+      artifact-prefix: shell_readonly
+      coverage: false
+      runner-image: ubuntu-24.04
+
+  check:
+    needs: [shell]
+    if: always()
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: Assert the read-only variant ran the tests
+        env:
+          RESULT: ${{ needs.shell.result }}
+          PASSED: ${{ needs.shell.outputs.passed }}
+          TOTAL: ${{ needs.shell.outputs.tests-total }}
+        run: |
+          echo "shell: result=$RESULT passed=$PASSED total=$TOTAL"
+          test "$RESULT" = success
+          test "$PASSED" = true
+          test "${TOTAL:-0}" -gt 0
