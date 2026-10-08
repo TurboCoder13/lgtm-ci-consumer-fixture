@@ -25,7 +25,7 @@ permissions: {}
 jobs:
   rust-wrong-digest:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@cc4cd678d2f34b396df27d4e625a8ace3a571f3b
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@0b7d990ea9efcfcb81822b518b325c9efc92d255
     permissions:
       actions: read
       contents: read
@@ -41,7 +41,7 @@ jobs:
 
   osv-wrong-digest:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-vuln-suppression-check.yml@cc4cd678d2f34b396df27d4e625a8ace3a571f3b
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-vuln-suppression-check.yml@0b7d990ea9efcfcb81822b518b325c9efc92d255
     permissions:
       contents: write
       pull-requests: write

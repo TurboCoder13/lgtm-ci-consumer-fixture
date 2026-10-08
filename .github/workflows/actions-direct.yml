@@ -28,7 +28,7 @@ jobs:
         run: scripts/check-no-vendoring.sh
       - name: run-pytest (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-pytest@cc4cd678d2f34b396df27d4e625a8ace3a571f3b
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-pytest@0b7d990ea9efcfcb81822b518b325c9efc92d255
         with:
           python-version: "3.12"
           working-directory: python
@@ -46,7 +46,7 @@ jobs:
         run: scripts/check-no-vendoring.sh
       - name: run-vitest (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-vitest@cc4cd678d2f34b396df27d4e625a8ace3a571f3b
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-vitest@0b7d990ea9efcfcb81822b518b325c9efc92d255
         with:
           package-manager: npm
           node-version: "22"
@@ -65,7 +65,7 @@ jobs:
         run: scripts/check-no-vendoring.sh
       - name: run-playwright (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-playwright@cc4cd678d2f34b396df27d4e625a8ace3a571f3b
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-playwright@0b7d990ea9efcfcb81822b518b325c9efc92d255
         with:
           package-manager: bun
           node-version: "22"
@@ -92,7 +92,7 @@ jobs:
           curl -fsS http://127.0.0.1:8080/ >/dev/null
       - name: run-lighthouse (direct)
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/run-lighthouse@cc4cd678d2f34b396df27d4e625a8ace3a571f3b
+        uses: lgtm-hq/lgtm-ci/.github/actions/run-lighthouse@0b7d990ea9efcfcb81822b518b325c9efc92d255
         with:
           # @lhci/cli is a consumer prerequisite (#1077): it lives in
           # lighthouse/package.json and is resolved through npm, never installed
