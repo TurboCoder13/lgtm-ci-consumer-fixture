@@ -22,7 +22,7 @@ permissions: {}
 jobs:
   facade-without-publish-scope:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@eb503366a0f30f58809c6e0f13a3b17f5c3c3d5b
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@de8188753449f568e87b486d462478586142d7f3
     permissions:
       actions: read
       contents: read
