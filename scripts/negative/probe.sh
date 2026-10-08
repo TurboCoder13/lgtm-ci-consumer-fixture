@@ -21,7 +21,7 @@
 #   GH_TOKEN               github.token with actions: write, checks: read
 #   GH_REPO                owner/repo of this fixture
 #   PROBE_REF              ref to dispatch the negative on (github.ref_name)
-#   PROBE_TIMEOUT_SECONDS  wait bound for the negative run, default 1200
+#   PROBE_TIMEOUT_SECONDS  wait bound for the negative run, default 1080 (fits the canary's 25 min window)
 #   PROBE_POLL_SECONDS     poll interval, default 15
 #   KEEP_NEGATIVE_RUN      "true" keeps the negative run after a pass
 #   PROBE_EVIDENCE         evidence JSON path, default negative-evidence.json
@@ -32,7 +32,7 @@ negative="${1:?usage: scripts/negative/probe.sh <negative-workflow.yml>}"
 negative="${negative##*/}"
 : "${GH_REPO:?GH_REPO is required}"
 : "${PROBE_REF:?PROBE_REF is required}"
-PROBE_TIMEOUT_SECONDS="${PROBE_TIMEOUT_SECONDS:-1200}"
+PROBE_TIMEOUT_SECONDS="${PROBE_TIMEOUT_SECONDS:-1080}"
 PROBE_POLL_SECONDS="${PROBE_POLL_SECONDS:-15}"
 KEEP_NEGATIVE_RUN="${KEEP_NEGATIVE_RUN:-false}"
 PROBE_EVIDENCE="${PROBE_EVIDENCE:-negative-evidence.json}"
@@ -95,6 +95,14 @@ while :; do
 done
 
 # Jobs with their annotations: [{name, conclusion, annotations: [{level, title, message}]}]
+# The listing is captured (not read from a process substitution) so a failed
+# lookup aborts the probe instead of reading as "no jobs", which would
+# satisfy the perms-negative expectation and delete the run.
+job_rows="$(gh api -X GET "repos/${GH_REPO}/actions/runs/${run_id}/jobs?per_page=100" \
+	--jq '.jobs[] | [.id, .name, (.conclusion // "")] | @tsv')" || {
+	echo "::error::cannot list the jobs of ${negative} run ${run_id}; kept for inspection" >&2
+	exit 1
+}
 jobs_json="[]"
 while IFS=$'\t' read -r job_id job_name job_conclusion; do
 	[[ -n "$job_id" ]] || continue
@@ -102,8 +110,7 @@ while IFS=$'\t' read -r job_id job_name job_conclusion; do
 		--jq '[.[] | {level: .annotation_level, title: (.title // ""), message}]')"
 	jobs_json="$(jq --arg n "$job_name" --arg c "$job_conclusion" --argjson a "$annotations" \
 		'. + [{name: $n, conclusion: $c, annotations: $a}]' <<<"$jobs_json")"
-done < <(gh api -X GET "repos/${GH_REPO}/actions/runs/${run_id}/jobs?per_page=100" \
-	--jq '.jobs[] | [.id, .name, (.conclusion // "")] | @tsv')
+done <<<"$job_rows"
 
 # Evaluate every expectation; collect a result row per check.
 failures=0
