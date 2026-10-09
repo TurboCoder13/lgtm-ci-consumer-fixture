@@ -1,0 +1,31 @@
+# lgtm-ci external-consumer fixture — NEGATIVE permission test for the
+# release-recover facade (lgtm-ci #1081). Grants exactly what the read-only
+# plan stage needs (actions: read, contents: read) but calls the facade
+# reusable-release-recover.yml with dry-run: false. The facade's resume stage
+# declares contents, id-token, attestations and issues write, so GitHub must
+# reject the run at parse time: expected startup_failure, before any job (and
+# so before anything is published). A run that starts is a finding.
+# workflow_dispatch only: a run that is expected to fail must not redden main.
+# Calls lgtm-hq/lgtm-ci at an exact SHA, from outside the lgtm-hq org.
+# Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-perms-negative-recover
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  facade-without-resume-scopes:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-recover.yml@65f3fe1597c41ff1bed38b743f755beea1b5ef34
+    permissions:
+      actions: read
+      contents: read
+    with:
+      tag: v0.0.0
+      source-run-id: "1"
+      source-workflow: .github/workflows/recover.yml
+      dry-run: false
+      tooling-ref: 65f3fe1597c41ff1bed38b743f755beea1b5ef34 # lgtm-ci-pin

@@ -1,0 +1,191 @@
+# lgtm-ci external-consumer fixture — release recovery end to end
+# (lgtm-ci #1081).
+# The run is its own source run: `source` builds one file, attests it,
+# uploads it with its SHA256SUMS as artifact recover-dist, and creates a
+# non-prerelease release (vfixture tag at this commit) WITHOUT the asset, so
+# the GitHub Release channel is partially published. Then:
+#   plan    - the read-only reusable-release-recover-plan.yml (actions: read,
+#             contents: read) must report github-release missing;
+#   dry-run - the facade with dry-run: true must publish nothing;
+#   resume  - the facade reusable-release-recover.yml with dry-run: false
+#             must upload the missing asset (the real side effect);
+#   verify  - the release must now carry the asset;
+#   cleanup - always deletes the release and its tag.
+# tooling-ref is required by the recovery workflows and must name the same
+# commit as the uses: lines; the `# lgtm-ci-pin` marker lets scripts/pin.sh
+# and the lgtm-ci canary rewrite it with them.
+# Calls lgtm-hq/lgtm-ci at an exact SHA, from outside the lgtm-hq org.
+# Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-recover
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: fixture-recover-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - name: Build and checksum the release file
+        run: |
+          mkdir -p dist
+          printf 'fixture recovery asset for run %s\n' "$GITHUB_RUN_ID" \
+            >dist/fixture-recover.txt
+          (cd dist && sha256sum fixture-recover.txt >SHA256SUMS)
+          cat dist/SHA256SUMS
+      - name: Attest the release file
+        # yamllint disable-line rule:line-length
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
+        with:
+          subject-path: dist/fixture-recover.txt
+      - name: Upload the recovery source artifact
+        # yamllint disable-line rule:line-length
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: recover-dist
+          path: dist/
+          retention-days: 1
+      - name: Create the release without its asset (the partial publish)
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: vfixture.${{ github.run_id }}.${{ github.run_attempt }}
+        run: |
+          gh release create "$TAG" -R "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "$TAG (recovery fixture)" \
+            --notes "Disposable; deleted by this run." --latest=false
+          echo "tag=$TAG" >>"$GITHUB_OUTPUT"
+
+  plan:
+    needs: [source]
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-recover-plan.yml@65f3fe1597c41ff1bed38b743f755beea1b5ef34
+    permissions:
+      actions: read
+      contents: read
+    with:
+      tag: ${{ needs.source.outputs.tag }}
+      source-run-id: ${{ github.run_id }}
+      source-workflow: .github/workflows/recover.yml
+      channels: github-release
+      release-artifact-name: recover-dist
+      signer-repo: ${{ github.repository }}
+      signer-workflow: .github/workflows/recover.yml
+      tooling-ref: 65f3fe1597c41ff1bed38b743f755beea1b5ef34 # lgtm-ci-pin
+
+  check-plan:
+    needs: [plan]
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: Assert the plan found the missing asset
+        env:
+          MISSING: ${{ needs.plan.outputs.missing }}
+          UNRESUMABLE: ${{ needs.plan.outputs.unresumable }}
+        run: |
+          echo "missing=$MISSING unresumable=$UNRESUMABLE"
+          jq -e 'index("github-release") != null' <<<"$MISSING"
+
+  # The facade's dry run: the plan runs, the Resume stage's channel jobs
+  # skip and only its record job runs (Opus review on lgtm-ci #1149).
+  dry-run:
+    needs: [source, check-plan]
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-recover.yml@65f3fe1597c41ff1bed38b743f755beea1b5ef34
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+      issues: write
+    with:
+      tag: ${{ needs.source.outputs.tag }}
+      source-run-id: ${{ github.run_id }}
+      source-workflow: .github/workflows/recover.yml
+      channels: github-release
+      release-artifact-name: recover-dist
+      signer-repo: ${{ github.repository }}
+      signer-workflow: .github/workflows/recover.yml
+      dry-run: true
+      tooling-ref: 65f3fe1597c41ff1bed38b743f755beea1b5ef34 # lgtm-ci-pin
+
+  check-dry-run:
+    needs: [source, dry-run]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Assert the dry run published nothing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.source.outputs.tag }}
+        run: |
+          assets="$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" \
+            --json assets --jq '.assets[].name')"
+          echo "assets: ${assets:-<none>}"
+          test -z "$assets"
+
+  resume:
+    needs: [source, check-dry-run]
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-recover.yml@65f3fe1597c41ff1bed38b743f755beea1b5ef34
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+      issues: write
+    with:
+      tag: ${{ needs.source.outputs.tag }}
+      source-run-id: ${{ github.run_id }}
+      source-workflow: .github/workflows/recover.yml
+      channels: github-release
+      release-artifact-name: recover-dist
+      signer-repo: ${{ github.repository }}
+      signer-workflow: .github/workflows/recover.yml
+      dry-run: false
+      tooling-ref: 65f3fe1597c41ff1bed38b743f755beea1b5ef34 # lgtm-ci-pin
+
+  verify:
+    needs: [source, resume]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Assert the resume uploaded the missing asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.source.outputs.tag }}
+        run: |
+          assets="$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" \
+            --json assets --jq '.assets[].name')"
+          echo "$assets"
+          grep -qx fixture-recover.txt <<<"$assets"
+
+  cleanup:
+    needs: [source, verify]
+    if: always() && needs.source.outputs.tag != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Delete the disposable release and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.source.outputs.tag }}
+        run: >-
+          gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --cleanup-tag --yes
