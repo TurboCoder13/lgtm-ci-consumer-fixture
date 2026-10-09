@@ -3,7 +3,8 @@
 # Calls reusable-docker-multiplatform-validate.yml with contents: read only:
 # native amd64 and arm64 builds without pushing, the local smoke test and a
 # Trivy scan. The run starting at all proves the union is read-only; the check
-# job asserts both legs produced their trivy-sarif-<slug> artifact, which the
+# job asserts both legs produced their docker-trivy-sarif-<slug> artifact
+# (default artifact-prefix), which the
 # facade would upload to code scanning. The facade with the same grant and
 # push: true is perms-negative-docker.yml (expected startup_failure).
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
@@ -57,5 +58,5 @@ jobs:
             --jq '.artifacts[].name')"
           echo "$names"
           for slug in linux-amd64 linux-arm64; do
-            grep -qx "trivy-sarif-$slug" <<<"$names"
+            grep -qx "docker-trivy-sarif-$slug" <<<"$names"
           done
