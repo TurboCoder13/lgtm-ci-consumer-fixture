@@ -1,0 +1,5 @@
+tool,issues_count,file,line,code,message
+actionlint,0,,,,
+yamllint,3,.github/workflows/recover.yml,57,comments,too few spaces before comment: expected 2
+yamllint,3,.github/workflows/recover.yml,88,comments,too few spaces before comment: expected 2
+yamllint,3,.github/workflows/recover.yml,122,comments,too few spaces before comment: expected 2

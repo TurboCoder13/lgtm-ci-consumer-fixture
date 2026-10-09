@@ -1,0 +1,12 @@
+tool,issues_count,file,line,code,message
+actionlint,0,,,,
+yamllint,10,.github/workflows/perms-negative-recover.yml,34,comments,too few spaces before comment: expected 2
+yamllint,10,.github/workflows/recover.yml,1,line-length,line too long (81 > 80 characters)
+yamllint,10,.github/workflows/recover.yml,45,line-length,line too long (97 > 80 characters)
+yamllint,10,.github/workflows/recover.yml,55,comments,too few spaces before comment: expected 2
+yamllint,10,.github/workflows/recover.yml,66,line-length,line too long (83 > 80 characters)
+yamllint,10,.github/workflows/recover.yml,67,line-length,line too long (90 > 80 characters)
+yamllint,10,.github/workflows/recover.yml,86,comments,too few spaces before comment: expected 2
+yamllint,10,.github/workflows/recover.yml,120,comments,too few spaces before comment: expected 2
+yamllint,10,.github/workflows/recover.yml,133,line-length,line too long (104 > 80 characters)
+yamllint,10,.github/workflows/recover.yml,148,line-length,line too long (81 > 80 characters)
