@@ -1,0 +1,3 @@
+tool,issues_count,file,line,code,message
+actionlint,0,,,,
+yamllint,1,.github/workflows/docker-facade-validate.yml,59,line-length,line too long (87 > 80 characters)

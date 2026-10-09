@@ -1,0 +1,3 @@
+tool,issues_count,file,line,code,message
+actionlint,0,,,,
+yamllint,0,,,,

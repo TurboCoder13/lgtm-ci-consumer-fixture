@@ -4,7 +4,8 @@
 # delegates to the internal publish reusable: native amd64 and arm64 staging
 # pushes to this repository's GHCR package, the smoke-test gate, the manifest
 # merge with published-manifest verification and provenance attestation, and
-# the scan of the merged digest. The check job asserts the real side effect:
+# Cosign keyless signing and the scan of the merged digest. The check job
+# asserts the real side effect:
 # the published index resolves and lists both platforms.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
 # lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
@@ -26,7 +27,7 @@ concurrency:
 jobs:
   publish:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@90e16f1141ad8673700f6c75ca5e80db79690679
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@2fc3853ad5e565a7c7c23bf77e4534c095864df1
     permissions:
       attestations: write
       contents: read
@@ -45,10 +46,7 @@ jobs:
       push: true
       smoke-test: "cat /ok"
       scan: true
-      # Probe (#1081): hosts the docker preset may be missing.
-      allowed-endpoints-mode: append
-      allowed-endpoints: >-
-        get.trivy.dev:443 mirror.gcr.io:443 token.actions.githubusercontent.com:443 fulcio.sigstore.dev:443 rekor.sigstore.dev:443 timestamp.sigstore.dev:443 tuf-repo-cdn.sigstore.dev:443
+      cosign-sign: true
 
   check:
     needs: [publish]

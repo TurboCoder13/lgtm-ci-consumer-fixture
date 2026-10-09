@@ -22,7 +22,7 @@ permissions: {}
 jobs:
   validate:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform-validate.yml@90e16f1141ad8673700f6c75ca5e80db79690679
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform-validate.yml@2fc3853ad5e565a7c7c23bf77e4534c095864df1
     permissions:
       contents: read
     with:
@@ -37,10 +37,6 @@ jobs:
       validate-on-pr: true
       smoke-test: "cat /ok"
       scan: true
-      # Probe (#1081): hosts the docker preset may be missing.
-      allowed-endpoints-mode: append
-      allowed-endpoints: >-
-        get.trivy.dev:443 mirror.gcr.io:443 token.actions.githubusercontent.com:443 fulcio.sigstore.dev:443 rekor.sigstore.dev:443 timestamp.sigstore.dev:443 tuf-repo-cdn.sigstore.dev:443
 
   check:
     needs: [validate]
