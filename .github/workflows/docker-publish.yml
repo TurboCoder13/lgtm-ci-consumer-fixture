@@ -1,0 +1,72 @@
+# lgtm-ci external-consumer fixture — Docker multi-platform facade, push
+# path (lgtm-ci #1081).
+# Calls the facade reusable-docker-multiplatform.yml with push: true, which
+# delegates to the internal publish reusable: native amd64 and arm64 staging
+# pushes to this repository's GHCR package, the smoke-test gate, the manifest
+# merge with published-manifest verification and provenance attestation, and
+# Cosign keyless signing and the scan of the merged digest. The check job
+# asserts the real side effect:
+# the published index resolves and lists both platforms.
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-docker-publish
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: fixture-docker-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@5479e741825e8866d7ba577a93305ff3a7e49d33
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+      security-events: write
+    with:
+      matrix: >-
+        [{"platform":"linux/amd64","slug":"linux-amd64",
+        "runner":"ubuntu-24.04","qemu":false},
+        {"platform":"linux/arm64","slug":"linux-arm64",
+        "runner":"ubuntu-24.04-arm","qemu":false}]
+      context: docker
+      file: docker/Dockerfile
+      image-name: turbocoder13/lgtm-ci-consumer-fixture/fixture-image
+      push: true
+      smoke-test: "cat /ok"
+      scan: true
+      cosign-sign: true
+
+  check:
+    needs: [publish]
+    if: always()
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: read
+    steps:
+      - name: Assert the published index lists both platforms
+        env:
+          RESULT: ${{ needs.publish.result }}
+          DIGEST: ${{ needs.publish.outputs.digest }}
+          GHCR_TOKEN: ${{ github.token }}
+          IMAGE: ghcr.io/turbocoder13/lgtm-ci-consumer-fixture/fixture-image
+        run: |
+          echo "publish: result=$RESULT digest=$DIGEST"
+          test "$RESULT" = success
+          [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          echo "$GHCR_TOKEN" |
+            docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          inspect="$(docker buildx imagetools inspect "$IMAGE@$DIGEST")"
+          echo "$inspect"
+          grep -q "linux/amd64" <<<"$inspect"
+          grep -q "linux/arm64" <<<"$inspect"

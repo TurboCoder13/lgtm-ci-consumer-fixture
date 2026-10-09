@@ -1,0 +1,33 @@
+# lgtm-ci external-consumer fixture — probe for docker-scan-failure.yml
+# (lgtm-ci #1081). Dispatches docker-scan-failure.yml on this run's ref and is
+# green only when it failed as designed: the per-platform builds fail on
+# Trivy findings and the verify job proves the SARIF still reached code
+# scanning (see negative-probe.yml and scripts/negative/probe.sh). The canary
+# dispatches this probe; it never dispatches docker-scan-failure.yml directly.
+---
+name: fixture-docker-scan-failure-probe
+
+"on":
+  workflow_dispatch:
+    inputs:
+      keep-negative-run:
+        description: Keep the negative run after a passing probe (default deletes it)
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: docker-scan-failure-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    uses: ./.github/workflows/negative-probe.yml
+    permissions:
+      actions: write
+      checks: read
+      contents: read
+    with:
+      negative: docker-scan-failure.yml
+      keep-negative-run: ${{ inputs.keep-negative-run || false }}

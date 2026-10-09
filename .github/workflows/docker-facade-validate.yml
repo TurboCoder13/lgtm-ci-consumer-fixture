@@ -1,0 +1,64 @@
+# lgtm-ci external-consumer fixture — Docker multi-platform facade, validate
+# path (lgtm-ci #1081). Calls the facade reusable-docker-multiplatform.yml
+# with push: false: it delegates to the read-only validate reusable, then its
+# own upload-scan-results job uploads each leg's Trivy SARIF to code scanning.
+# The caller grants the facade's full union (GitHub checks it statically even
+# for push: false); readonly-docker.yml calls the validate file directly with
+# contents: read only.
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-docker-facade-validate
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  facade:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@5479e741825e8866d7ba577a93305ff3a7e49d33
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+      security-events: write
+    with:
+      matrix: >-
+        [{"platform":"linux/amd64","slug":"linux-amd64",
+        "runner":"ubuntu-24.04","qemu":false},
+        {"platform":"linux/arm64","slug":"linux-arm64",
+        "runner":"ubuntu-24.04-arm","qemu":false}]
+      context: docker
+      file: docker/Dockerfile
+      image-name: turbocoder13/lgtm-ci-consumer-fixture/fixture-image
+      push: false
+      validate-on-pr: true
+      smoke-test: "cat /ok"
+      scan: true
+
+  check:
+    needs: [facade]
+    if: always()
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: read
+    steps:
+      - name: Assert the facade validated and uploaded both SARIF categories
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.facade.result }}
+        run: |
+          echo "facade: result=$RESULT"
+          test "$RESULT" = success
+          api="repos/$GITHUB_REPOSITORY/code-scanning/analyses"
+          analyses="$(gh api -X GET "$api" \
+            -f ref="$GITHUB_REF" -f per_page=50 --jq '.[].category')"
+          echo "$analyses"
+          for slug in linux-amd64 linux-arm64; do
+            grep -qx "trivy-$slug" <<<"$analyses"
+          done

@@ -23,6 +23,13 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `perms-negative-shell.yml` | dispatch only | **Negative:** the shell facade `reusable-test-shell.yml` with the same two read scopes and `publish-test-summary: true`. Expected `startup_failure` at parse time (lgtm-ci #1081) |
 | `readonly-rust.yml` | push, dispatch | Generated read-only variant `reusable-rust-test-run.yml` (lgtm-ci #1081) on the `rust/` project with `actions: read` + `contents: read` only; the `check` job asserts the tests ran |
 | `perms-negative-rust.yml` | dispatch only | **Negative:** the Rust facade `reusable-rust-test.yml` with the same two read scopes and `publish-test-summary: true`. Expected `startup_failure` at parse time (lgtm-ci #1081) |
+| `readonly-docker.yml` | push, dispatch | Read-only Docker entry `reusable-docker-multiplatform-validate.yml` (lgtm-ci #1081) with `contents: read` only: native amd64 + arm64 builds, smoke test, Trivy; asserts both `docker-trivy-sarif-<slug>` artifacts |
+| `docker-facade-validate.yml` | push, dispatch | Facade `reusable-docker-multiplatform.yml` with `push: false`: validate path plus the facade's SARIF upload; asserts both `trivy-<slug>` code-scanning analyses |
+| `docker-publish.yml` | push, dispatch | Facade with `push: true` and keyless Cosign to this repository's GHCR package `fixture-image`; asserts the published index lists both platforms |
+| `docker-orchestrator.yml` | push, dispatch | `reusable-docker.yml` with `runner-map`: classify picks the split path through the facade into the validate file (three levels of nesting) |
+| `docker-scan-failure.yml` | dispatch only (by its probe) | **Negative:** facade with `scan-exit-code: "1"` on the outdated `docker/Dockerfile.vulnerable`; builds fail, the verify job asserts the SARIF still reached code scanning |
+| `docker-scan-failure-probe.yml` | dispatch only | Dispatches `docker-scan-failure.yml` and asserts it failed as designed (see [Negative probes](#negative-probes)) |
+| `perms-negative-docker.yml` | dispatch only | **Negative:** facade with `push: true` and only `contents: read`. Expected `startup_failure` at parse time, before any push (lgtm-ci #1081) |
 | `actions-direct.yml` | push, dispatch | Direct `uses: lgtm-hq/lgtm-ci/.github/actions/run-*@sha` path (#1075) |
 | `app-token-probe.yml` | dispatch only | Reach of a GitHub App token minted as the release reusables do (`owner` only, no `repositories:`): single-repo install sees exactly one repo; scoped variant works; sibling repo refused (#849) |
 | `release-version-pr.yml` | dispatch only | `reusable-release-version-pr` from outside the org: App token, python ecosystem under `python/`, opens a version PR (closed by hand). See [Release paths](#release-paths) |

@@ -64,6 +64,13 @@ expectations() {
 		printf 'job\trust-wrong-digest / NEGATIVE nextest wrong digest\tfailure\tdigest mismatch\n'
 		printf 'job\tosv-wrong-digest / NEGATIVE osv-scanner wrong digest\tfailure\tdigest mismatch\n'
 		;;
+	docker-scan-failure.yml)
+		# Trivy findings fail the read-only builds (lgtm-ci #1081); the SARIF
+		# must still reach code scanning through the facade's upload job.
+		printf 'conclusion\tfailure\n'
+		printf 'job\tfacade / Validate / Docker build per platform\tfailure\n'
+		printf 'job\tVerify SARIF reached code scanning\tsuccess\n'
+		;;
 	*)
 		echo "::error::no expectations for '$1'" >&2
 		return 1

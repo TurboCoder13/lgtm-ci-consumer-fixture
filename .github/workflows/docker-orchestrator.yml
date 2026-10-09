@@ -1,0 +1,51 @@
+# lgtm-ci external-consumer fixture — Docker orchestrator, split path
+# (lgtm-ci #1081). Calls reusable-docker.yml the way the org's consumers do:
+# a runner-map makes classify pick the split path, so the call nests
+# orchestrator -> reusable-docker-multiplatform.yml (facade) ->
+# reusable-docker-multiplatform-validate.yml. push: false with the local
+# smoke test; the check job asserts the build and validation summary ran.
+# Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the
+# lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-docker-orchestrator
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  docker:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker.yml@5479e741825e8866d7ba577a93305ff3a7e49d33
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+      security-events: write
+    with:
+      context: docker
+      file: docker/Dockerfile
+      image-name: turbocoder13/lgtm-ci-consumer-fixture/fixture-image
+      platforms: linux/amd64,linux/arm64
+      runner-map: '{"linux/arm64":"ubuntu-24.04-arm"}'
+      artifact-prefix: orchestrator
+      push: false
+      validate-on-pr: true
+      smoke-test: "cat /ok"
+
+  check:
+    needs: [docker]
+    if: always()
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: Assert the split path ran through the facade
+        env:
+          RESULT: ${{ needs.docker.result }}
+        run: |
+          echo "docker: result=$RESULT"
+          test "$RESULT" = success
