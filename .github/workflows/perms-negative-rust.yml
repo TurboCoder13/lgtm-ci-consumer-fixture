@@ -19,7 +19,7 @@ permissions: {}
 jobs:
   facade-without-publish-scope:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@00a4db8bf8bc9f0eb3ec7798a9913eb26d5271ab
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@eae062ce40ce20fee8123f1ab609d4c5a57d8be2
     permissions:
       actions: read
       contents: read

@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   shell:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-shell-run.yml@524235714721697ff0f1e3c4bb8feb207dd991f2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-shell-run.yml@eae062ce40ce20fee8123f1ab609d4c5a57d8be2
     permissions:
       actions: read
       contents: read
