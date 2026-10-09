@@ -12,8 +12,10 @@
 #   verify  - the release must now carry the asset;
 #   cleanup - always deletes the release and its tag.
 # tooling-ref is required by the recovery workflows and must name the same
-# commit as the uses: lines; the `# lgtm-ci-pin` marker lets scripts/pin.sh
-# and the lgtm-ci canary rewrite it with them.
+# commit as the uses: lines; the lgtm-ci-pin end-of-line marker lets
+# scripts/pin.sh and the lgtm-ci canary rewrite it with them. (Don't write
+# the marker with its leading hash in a comment: the canary's stale-pin check
+# would read the comment as an unpinned ref.)
 # Calls lgtm-hq/lgtm-ci at an exact SHA, from outside the lgtm-hq org.
 # Re-pin with: scripts/pin.sh <sha>
 ---
