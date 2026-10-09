@@ -68,7 +68,8 @@ expectations() {
 		# Trivy findings fail the read-only builds (lgtm-ci #1081); the SARIF
 		# must still reach code scanning through the facade's upload job.
 		printf 'conclusion\tfailure\n'
-		printf 'job\tfacade / Validate / Docker build per platform\tfailure\n'
+		# Both matrix legs match the prefix; their conclusions are joined.
+		printf 'job\tfacade / Validate / Docker build per platform\tfailure,failure\n'
 		printf 'job\tVerify SARIF reached code scanning\tsuccess\n'
 		;;
 	*)
