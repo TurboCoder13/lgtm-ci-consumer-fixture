@@ -1,0 +1,6 @@
+# Deliberately outdated base image for the scan-failure probe (lgtm-ci #1081):
+# Alpine 3.10 is end of life and carries known HIGH/CRITICAL findings, so a
+# Trivy scan with exit-code 1 fails. Never published (push: false).
+FROM alpine:3.10
+RUN printf 'fixture-ok\n' > /ok
+CMD ["cat", "/ok"]

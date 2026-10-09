@@ -21,7 +21,7 @@ permissions: {}
 jobs:
   facade:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@2fc3853ad5e565a7c7c23bf77e4534c095864df1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@2bc127822a4870e6910174ee60890c173d62d2e2
     permissions:
       attestations: write
       contents: read
