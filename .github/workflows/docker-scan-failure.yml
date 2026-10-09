@@ -67,8 +67,13 @@ jobs:
           echo "facade: result=$RESULT started=$STARTED"
           test "$RESULT" = failure
           api="repos/$GITHUB_REPOSITORY/code-scanning/analyses"
-          cats="$(gh api -X GET "$api" -f ref="$GITHUB_REF" -f per_page=50 \
-            --jq ".[] | select(.created_at >= \"$STARTED\") | .category")"
+          # Only this workflow's own uploads count: docker-facade-validate.yml
+          # uploads the same categories on the same ref at the same time
+          # (lgtm-ci #1150 review).
+          key=".github/workflows/docker-scan-failure.yml:upload-scan-results"
+          cats="$(gh api -X GET "$api" -f ref="$GITHUB_REF" -f per_page=100 \
+            --jq ".[] | select(.created_at >= \"$STARTED\")
+              | select(.analysis_key == \"$key\") | .category")"
           echo "$cats"
           for slug in linux-amd64 linux-arm64; do
             grep -qx "trivy-$slug" <<<"$cats"
