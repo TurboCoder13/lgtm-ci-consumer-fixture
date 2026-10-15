@@ -47,7 +47,7 @@ jobs:
     needs: e2e-failing
     # The e2e job is red by design; this job is the verdict.
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       contents: read

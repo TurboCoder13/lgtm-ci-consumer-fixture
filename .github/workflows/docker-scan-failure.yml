@@ -18,7 +18,7 @@ permissions: {}
 
 jobs:
   stamp:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions: {}
     outputs:
       started: ${{ steps.now.outputs.started }}
@@ -54,7 +54,7 @@ jobs:
     name: Verify SARIF reached code scanning
     needs: [stamp, facade]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       security-events: read
     steps:

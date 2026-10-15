@@ -26,7 +26,7 @@ permissions: {}
 jobs:
   reach-unscoped:
     name: Un-scoped token (owner only, as lgtm-ci does)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions: {}
     steps:
@@ -78,7 +78,7 @@ jobs:
 
   reach-scoped:
     name: Scoped token (owner + repositories)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions: {}
     steps:
@@ -126,7 +126,7 @@ jobs:
 
   reach-negative:
     name: Un-scoped token must not reach a sibling repo
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions: {}
     steps:
