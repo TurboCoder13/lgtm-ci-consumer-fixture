@@ -58,13 +58,13 @@ jobs:
           names=$(jq -r '.repositories[].full_name' <<<"$json")
           echo "total_count=${count}"
           echo "repositories:"
-          echo "$names" | sed 's/^/  - /'
+          jq -r '.repositories[] | "  - " + .full_name' <<<"$json"
           echo "token-reach-count=${count}" >> "$GITHUB_OUTPUT"
           {
             echo "### Un-scoped App token reach"
             echo
             echo "- total_count: \`${count}\`"
-            echo "$names" | sed 's/^/- /'
+            jq -r '.repositories[] | "- " + .full_name' <<<"$json"
           } >> "$GITHUB_STEP_SUMMARY"
           if [[ "$count" != "1" ]]; then
             echo "::error::expected exactly 1 repository, got ${count}"
@@ -110,12 +110,12 @@ jobs:
           count=$(jq -r '.total_count' <<<"$json")
           names=$(jq -r '.repositories[].full_name' <<<"$json")
           echo "total_count=${count}"
-          echo "$names" | sed 's/^/  - /'
+          jq -r '.repositories[] | "  - " + .full_name' <<<"$json"
           {
             echo "### Scoped App token reach"
             echo
             echo "- total_count: \`${count}\`"
-            echo "$names" | sed 's/^/- /'
+            jq -r '.repositories[] | "- " + .full_name' <<<"$json"
           } >> "$GITHUB_STEP_SUMMARY"
           if [[ "$count" != "1" || "$names" != "$EXPECTED_REPO" ]]; then
             echo "::error::scoped token should reach only ${EXPECTED_REPO}"
