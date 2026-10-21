@@ -53,7 +53,7 @@ jobs:
 
   artifacts:
     needs: [a, b]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       actions: read
     steps:
