@@ -54,7 +54,7 @@ jobs:
   verify-report:
     name: Verify HTML report artifact
     needs: e2e
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       contents: read

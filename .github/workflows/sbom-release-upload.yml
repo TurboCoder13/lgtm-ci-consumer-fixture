@@ -40,7 +40,7 @@ env:
 jobs:
   prepare:
     name: Create prerelease and SBOM artifact
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       contents: write
@@ -99,7 +99,7 @@ jobs:
     name: Assert assets, then delete release and tag
     needs: [prepare, upload]
     if: always() && needs.prepare.result == 'success'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       contents: write

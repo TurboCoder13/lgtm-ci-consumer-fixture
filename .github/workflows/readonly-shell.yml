@@ -35,7 +35,7 @@ jobs:
   check:
     needs: [shell]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions: {}
     steps:
       - name: Assert the read-only variant ran the tests

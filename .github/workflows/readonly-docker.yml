@@ -41,7 +41,7 @@ jobs:
   check:
     needs: [validate]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       actions: read
     steps:
