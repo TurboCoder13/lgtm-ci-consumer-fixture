@@ -26,6 +26,10 @@ snapshot() {
 		stat -Lc '%d:%i %n' /etc/resolv.conf
 		cat /etc/resolv.conf
 		timeout 10 resolvectl status || true
+		timeout 10 resolvectl statistics || true
+		findmnt -T /etc/resolv.conf -o TARGET,SOURCE,FSTYPE || true
+		grep -E '^hosts:' /etc/nsswitch.conf || true
+		grep -E '(^|[[:space:]])(api\.)?github\.com([[:space:]]|$)' /etc/hosts || true
 		local file
 		for file in /etc/systemd/resolved.conf /etc/systemd/resolved.conf.d/*.conf \
 			/run/systemd/resolve/resolv.conf /run/systemd/resolve/stub-resolv.conf; do
@@ -44,6 +48,10 @@ snapshot() {
 		sudo -n sha256sum /home/agent/agent 2>/dev/null || true
 		sudo -n iptables-save || true
 		sudo -n ip6tables-save || true
+		# Native nftables rules may not appear in the iptables compatibility view.
+		printf 'NATIVE_NFTABLES_BEGIN\n'
+		sudo -n timeout 10 nft list ruleset || true
+		printf 'NATIVE_NFTABLES_END\n'
 		if sudo -n grep -Fxq Initialized /home/agent/agent.status 2>/dev/null; then
 			printf 'agent-status=Initialized\n'
 		else
@@ -132,6 +140,24 @@ negative() {
 	[[ "$verdict" == CONFIRMED_BLOCK ]]
 }
 
+# Public read only, no token, no body retained, no retry. HTTP errors remain
+# distinct from connection failures in the curl receipt and process exit code.
+api_read() {
+	local out result=0
+	out="$(probe_dir)"
+	curl --noproxy '*' --connect-timeout 5 --max-time 10 --retry 0 \
+		--fail --silent --show-error --output /dev/null \
+		--write-out 'http_code=%{http_code}\nremote_ip=%{remote_ip}\nremote_port=%{remote_port}\n' \
+		https://api.github.com/repos/TurboCoder13/lgtm-ci-consumer-fixture \
+		>"$out/api.txt" 2>"$out/api-stderr.txt" || result="$?"
+	printf 'curl_rc=%s\n' "$result" >>"$out/api.txt"
+	cat "$out/api.txt"
+	if [[ "$result" != 0 ]]; then
+		return "$result"
+	fi
+	grep -Fxq http_code=200 "$out/api.txt"
+}
+
 payload() {
 	printf '%s %s %s\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$RUNNER_ARCH" >"$(probe_dir)/payload.txt"
 }
@@ -178,6 +204,7 @@ main() {
 	snapshot) snapshot hardened ;;
 	payload) payload ;;
 	roundtrip) roundtrip ;;
+	api) api_read ;;
 	negative) negative ;;
 	finish) finish ;;
 	*)

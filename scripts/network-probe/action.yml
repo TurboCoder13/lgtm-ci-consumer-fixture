@@ -3,7 +3,7 @@ name: Fixture network diagnostics
 description: Collect bounded DNS and egress evidence without changing policy
 inputs:
   mode:
-    description: prepare, snapshot, payload, roundtrip, negative, or finish
+    description: prepare, snapshot, payload, roundtrip, api, negative, or finish
     required: true
 runs:
   using: node24

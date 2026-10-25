@@ -143,3 +143,50 @@ LOG
 	[ "$status" -eq 1 ]
 	[ "$output" = UNCONFIRMED ]
 }
+
+@test "API read accepts HTTP 200 and retains transport receipt without response body" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	curl() {
+		printf '%s\n' "$@" >"$(probe_dir)/api-arguments.txt"
+		printf 'http_code=200\nremote_ip=140.82.116.5\nremote_port=443\n'
+	}
+	run api_read
+	[ "$status" -eq 0 ]
+	grep -Fxq 'curl_rc=0' "$(probe_dir)/api.txt"
+	grep -Fxq '/dev/null' "$(probe_dir)/api-arguments.txt"
+	grep -Fxq 'https://api.github.com/repos/TurboCoder13/lgtm-ci-consumer-fixture' "$(probe_dir)/api-arguments.txt"
+}
+
+@test "API read preserves HTTP 403 failure distinct from transport failure" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	curl() {
+		printf 'http_code=403\nremote_ip=140.82.116.5\nremote_port=443\n'
+		return 22
+	}
+	run api_read
+	[ "$status" -eq 22 ]
+	grep -Fxq 'http_code=403' "$(probe_dir)/api.txt"
+	grep -Fxq 'curl_rc=22' "$(probe_dir)/api.txt"
+}
+
+@test "API read preserves connection refusal as curl 7" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	curl() {
+		printf 'http_code=000\nremote_ip=\nremote_port=0\n'
+		return 7
+	}
+	run api_read
+	[ "$status" -eq 7 ]
+	grep -Fxq 'curl_rc=7' "$(probe_dir)/api.txt"
+}
+
+@test "API read rejects HTTP redirect even if curl reports success" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	curl() { printf 'http_code=301\nremote_ip=140.82.116.5\nremote_port=443\n'; }
+	run api_read
+	[ "$status" -eq 1 ]
+}
