@@ -1,7 +1,7 @@
 # Branch-only diagnostic replacement; no automatic triggers.
 ---
 name: fixture-egress-dns-diagnostic
-run-name: DNS diagnostic — ${{ github.ref_name }}
+run-name: DNS matched-pin sample — ${{ github.ref_name }}
 "on":
   workflow_dispatch:
 permissions:
@@ -17,21 +17,22 @@ jobs:
     timeout-minutes: 8
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 2
       matrix:
-        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+        runner: [ubuntu-24.04]
+        sample: [1, 2, 3, 4, 5, 6, 7, 8]
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Collect baseline and begin passive DNS capture
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@41ccbb0e34f7522f231bb5ac1853b67fcda22ba8
         with:
           mode: prepare
-      - name: Harden using deployed community pin
+      - name: Harden using newer failing job exact pin
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25  # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2  # v2.22.2
         with:
           egress-policy: block
           allowed-endpoints: |
@@ -44,7 +45,7 @@ jobs:
         if: always()
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@41ccbb0e34f7522f231bb5ac1853b67fcda22ba8
         with:
           mode: snapshot
       - name: Real checkout of dispatched commit
@@ -57,10 +58,17 @@ jobs:
           fetch-depth: 1
           submodules: false
           lfs: false
+      - name: Read public GitHub API independently of checkout
+        if: always()
+        # Full SHA action reference must remain contiguous.
+        # yamllint disable-line rule:line-length
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@41ccbb0e34f7522f231bb5ac1853b67fcda22ba8
+        with:
+          mode: api
       - name: Prepare synthetic payload
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@41ccbb0e34f7522f231bb5ac1853b67fcda22ba8
         with:
           mode: payload
       - name: Upload synthetic payload
@@ -68,7 +76,7 @@ jobs:
         # yamllint disable-line rule:line-length
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
-          name: network-payload-${{ matrix.runner }}
+          name: network-payload-${{ matrix.runner }}-${{ matrix.sample }}
           path: ${{ runner.temp }}/ci1203/payload.txt
           if-no-files-found: error
           retention-days: 90
@@ -77,25 +85,25 @@ jobs:
         # yamllint disable-line rule:line-length
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
-          name: network-payload-${{ matrix.runner }}
+          name: network-payload-${{ matrix.runner }}-${{ matrix.sample }}
           path: ${{ runner.temp }}/ci1203-roundtrip
       - name: Verify artifact roundtrip
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@41ccbb0e34f7522f231bb5ac1853b67fcda22ba8
         with:
           mode: roundtrip
       - name: Verify explicitly unallowed traffic is locally blocked
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@41ccbb0e34f7522f231bb5ac1853b67fcda22ba8
         with:
           mode: negative
       - name: Freeze diagnostic evidence even on failure
         if: always()
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@41ccbb0e34f7522f231bb5ac1853b67fcda22ba8
         with:
           mode: finish
       - name: Preserve diagnostic text and checksums
@@ -104,7 +112,7 @@ jobs:
         # yamllint disable-line rule:line-length
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
-          name: network-diagnostics-${{ matrix.runner }}
+          name: network-diagnostics-${{ matrix.runner }}-${{ matrix.sample }}
           path: |
             ${{ runner.temp }}/ci1203/*.txt
             ${{ runner.temp }}/ci1203/SHA256SUMS
