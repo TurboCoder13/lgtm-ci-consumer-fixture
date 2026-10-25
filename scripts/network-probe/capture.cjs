@@ -6,8 +6,7 @@ const path = require("node:path");
 const { spawn } = require("node:child_process");
 const { setTimeout: delay } = require("node:timers/promises");
 
-const DNS_FILTER =
-  "(udp port 53 or tcp port 53) and (net 127.0.0.0/8 or host 168.63.129.16)";
+const DNS_FILTER = "(udp port 53 or tcp port 53) and (net 127.0.0.0/8 or host 168.63.129.16)";
 const DOMAIN =
   /(?:^|[\s,])(?:[a-zA-Z0-9_-]+\.)*(?:github\.com|githubapp\.com|githubusercontent\.com|blob\.core\.windows\.net|example\.com)\.(?:[\s,]|$)/;
 const HEADER = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ IP6? /;
@@ -21,9 +20,7 @@ function writeState({ directory, state }) {
 
 function readState(directory) {
   try {
-    return JSON.parse(
-      fs.readFileSync(path.join(directory, "capture-state.live"), "utf8"),
-    );
+    return JSON.parse(fs.readFileSync(path.join(directory, "capture-state.live"), "utf8"));
   } catch (error) {
     if (error.code === "ENOENT") return { stage: "missing" };
     throw error;
@@ -65,10 +62,8 @@ function completeness({ state, wire, agent }) {
     reasons.push("timestamped infrastructure DNS records missing");
   if (!/\b\d+\+ (?:\[[^\]\n]+\] )?A\? (?:api\.)?github\.com\./.test(wire))
     reasons.push("GitHub DNS query missing (cache/route may be unobserved)");
-  if (!/\b(?:api\.)?github\.com\..*\bA \d+\./.test(wire))
-    reasons.push("GitHub DNS answer missing");
-  if (!agent.includes("agent-status=Initialized"))
-    reasons.push("agent initialization missing");
+  if (!/\b(?:api\.)?github\.com\..*\bA \d+\./.test(wire)) reasons.push("GitHub DNS answer missing");
+  if (!agent.includes("agent-status=Initialized")) reasons.push("agent initialization missing");
   if (!agent.includes("endpoint called ip address:port"))
     reasons.push("agent application-connection evidence missing");
   return reasons;
@@ -90,19 +85,7 @@ function supervise(directory) {
   });
   const child = spawn(
     "sudo",
-    [
-      "-n",
-      "timeout",
-      "420",
-      "tcpdump",
-      "-i",
-      "any",
-      "-l",
-      "-nn",
-      "-tttt",
-      "-vv",
-      DNS_FILTER,
-    ],
+    ["-n", "timeout", "420", "tcpdump", "-i", "any", "-l", "-nn", "-tttt", "-vv", DNS_FILTER],
     {
       env: { ...process.env, TZ: "UTC", LC_ALL: "C" },
       stdio: ["ignore", "pipe", "pipe"],
@@ -148,10 +131,7 @@ function supervise(directory) {
     state.stage = "frozen";
     state.frozenAt = utcNow();
     fs.copyFileSync(live, path.join(directory, "dns-wire.txt"));
-    fs.writeFileSync(
-      path.join(directory, "capture-status.txt"),
-      `${JSON.stringify(state)}\n`,
-    );
+    fs.writeFileSync(path.join(directory, "capture-status.txt"), `${JSON.stringify(state)}\n`);
     writeState({ directory, state });
     clearInterval(control);
     // Only our still-owned child; timeout independently bounds orphan lifetime.
@@ -193,16 +173,10 @@ async function freeze(directory) {
   }
   // Preserve partial data and explicit incompleteness; never call it frozen.
   const state = readState(directory);
-  fs.writeFileSync(
-    path.join(directory, "capture-status.txt"),
-    `${JSON.stringify(state)}\n`,
-  );
+  fs.writeFileSync(path.join(directory, "capture-status.txt"), `${JSON.stringify(state)}\n`);
   const live = path.join(directory, "dns-wire.live");
-  if (fs.existsSync(live))
-    fs.copyFileSync(live, path.join(directory, "dns-wire.txt"));
-  throw new Error(
-    "DNS capture did not acknowledge freeze; evidence incomplete",
-  );
+  if (fs.existsSync(live)) fs.copyFileSync(live, path.join(directory, "dns-wire.txt"));
+  throw new Error("DNS capture did not acknowledge freeze; evidence incomplete");
 }
 
 function verify(directory) {
@@ -216,9 +190,7 @@ function verify(directory) {
     wire: read("dns-wire.txt"),
     agent: read("final.txt"),
   });
-  const result = reasons.length
-    ? `UNCONFIRMED: ${reasons.join("; ")}`
-    : "COMPLETE_DNS_EVIDENCE";
+  const result = reasons.length ? `UNCONFIRMED: ${reasons.join("; ")}` : "COMPLETE_DNS_EVIDENCE";
   fs.writeFileSync(path.join(directory, "completeness.txt"), `${result}\n`);
   console.log(result);
   return reasons.length ? 1 : 0;

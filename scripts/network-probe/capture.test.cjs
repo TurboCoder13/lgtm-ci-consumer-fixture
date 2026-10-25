@@ -113,21 +113,13 @@ test("real collector freezes immutable text while a mocked capture emits late pa
   const target = path.join(directory, "dns-wire.txt");
   const before = fs.readFileSync(target);
   const digest = crypto.createHash("sha256").update(before).digest("hex");
-  fs.writeFileSync(
-    path.join(directory, "SHA256SUMS"),
-    `${digest}  dns-wire.txt\n`,
-  );
+  fs.writeFileSync(path.join(directory, "SHA256SUMS"), `${digest}  dns-wire.txt\n`);
   const manifest = fs.readFileSync(path.join(directory, "SHA256SUMS"));
   await delay(1100);
   assert.equal(fs.readFileSync(target, "utf8"), query + answer);
   assert.deepEqual(fs.readFileSync(target), before);
-  assert.deepEqual(
-    fs.readFileSync(path.join(directory, "SHA256SUMS")),
-    manifest,
-  );
-  const state = JSON.parse(
-    fs.readFileSync(path.join(directory, "capture-status.txt"), "utf8"),
-  );
+  assert.deepEqual(fs.readFileSync(path.join(directory, "SHA256SUMS")), manifest);
+  const state = JSON.parse(fs.readFileSync(path.join(directory, "capture-status.txt"), "utf8"));
   assert.equal(state.healthyAtFreeze, true);
 });
 
