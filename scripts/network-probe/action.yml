@@ -6,11 +6,6 @@ inputs:
     description: prepare, snapshot, payload, roundtrip, negative, or finish
     required: true
 runs:
-  using: composite
-  steps:
-    - name: Run fixture-owned diagnostic helper
-      shell: bash
-      env:
-        PROBE_MODE: ${{ inputs.mode }}
-        PROBE_HELPER: ${{ github.action_path }}/probe.sh
-      run: bash "$PROBE_HELPER"
+  using: node24
+  pre: pre.cjs
+  main: main.cjs

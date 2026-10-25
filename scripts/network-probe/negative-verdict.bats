@@ -58,3 +58,13 @@ LOG
 	run negative_verdict 7 93.184.215.14 1234 active "$events"
 	[ "$status" -eq 0 ]
 }
+
+@test "refuse the claimed pre-hardener baseline when agent is already active" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	systemctl() { return 0; }
+	snapshot() { echo 'incorrectly took a baseline'; }
+	run prepare
+	[ "$status" -eq 1 ]
+	[[ "$output" == *'agent already running'* ]]
+	[[ "$output" != *'incorrectly took a baseline'* ]]
+}

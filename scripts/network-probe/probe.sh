@@ -19,6 +19,7 @@ snapshot() {
 		printf 'stage=%s sha=%s run=%s attempt=%s arch=%s image=%s version=%s\n' \
 			"$stage" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" \
 			"$RUNNER_ARCH" "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+		printf 'region=unknown (external Set up job receipt required)\n'
 		sha256sum "${BASH_SOURCE[0]}"
 		uname -a
 		readlink -f /etc/resolv.conf
@@ -37,33 +38,37 @@ snapshot() {
 		ip route show
 		local unit
 		for unit in systemd-resolved egress-dns-resolver egress-outbound-proxy hosted-compute-agent agent; do
+			printf 'UNIT %s\n' "$unit"
 			systemctl show "$unit" -p LoadState -p ActiveState -p ExecMainPID || true
 		done
 		sudo -n sha256sum /home/agent/agent 2>/dev/null || true
 		sudo -n iptables-save || true
 		sudo -n ip6tables-save || true
+		if sudo -n grep -Fxq Initialized /home/agent/agent.status 2>/dev/null; then
+			printf 'agent-status=Initialized\n'
+		else
+			printf 'agent-status=unavailable\n'
+		fi
 		agent_events
 	} >"$out" 2>&1
 	cat "$out"
 }
 
 prepare() {
-	local out
+	local out helper
 	out="$(probe_dir)"
+	helper="$(dirname "${BASH_SOURCE[0]}")"
 	mkdir -p "$out"
-	snapshot before
-	# Passive only: no DNS lookups before the real checkout and artifact tests.
-	# GitHub pre-downloads this SHA-pinned helper with the other actions.
-	if command -v tcpdump >/dev/null; then
-		# Bounded DNS text only, no HTTP payload, pcap, environment or credentials.
-		sudo -n timeout 420 tcpdump -i any -l -nn -tttt -vv \
-			'(udp port 53 or tcp port 53) and (net 127.0.0.0/8 or host 168.63.129.16)' 2>&1 |
-			grep --line-buffered -E 'github\.com|githubapp\.com|githubusercontent\.com|blob\.core\.windows\.net|example\.com|tcpdump:|packets captured|packets received|packets dropped' \
-				>"$out/dns-wire.txt" &
-		printf '%s\n' "$!" >"$out/capture.pid"
-	else
-		printf 'tcpdump unavailable; DNS packet evidence incomplete\n' >"$out/dns-wire.txt"
+	# This is the FIRST action's runs.pre, ahead of the hardener's runs.pre.
+	# Refuse a false baseline if pre-hook order or runner state differs.
+	if systemctl is-active --quiet agent.service; then
+		printf 'UNCONFIRMED: agent already running before baseline\n' >&2
+		return 1
 	fi
+	snapshot before
+	"${PROBE_NODE:-node}" "$helper/capture.cjs" start "$out"
+	date -u -Is >"$out/prepared.marker"
+	printf 'PRE_HARDENER_READY\n'
 }
 
 # A generic curl failure is NOT an enforcement pass. Require fresh evidence
@@ -122,6 +127,8 @@ roundtrip() {
 finish() {
 	local out host resolver
 	out="$(probe_dir)"
+	# Freeze before active comparisons so they cannot contaminate the capture.
+	"${PROBE_NODE:-node}" "$(dirname "${BASH_SOURCE[0]}")/capture.cjs" freeze "$out" || true
 	snapshot final
 	# Label these as active measurements: they can alter cache state.
 	{
@@ -138,21 +145,19 @@ finish() {
 		printf 'ACTIVE_DNS_COMPARISONS_END\n'
 	} >"$out/active-dns.txt" 2>&1
 	cat "$out/active-dns.txt"
-	# Freeze a copy before checksumming: the independently bounded capture may
-	# still be writing its .live file. Never signal a possibly reused PID.
-	if [[ -f "$out/dns-wire.live" ]]; then
-		cp "$out/dns-wire.live" "$out/dns-wire.txt"
-	fi
 	# Snapshots and console output survive failed artifact publication.
 	[[ ! -f "$out/dns-wire.txt" ]] || cat "$out/dns-wire.txt"
+	"${PROBE_NODE:-node}" "$(dirname "${BASH_SOURCE[0]}")/capture.cjs" verify "$out" || true
 	(cd "$out" && sha256sum ./*.txt >SHA256SUMS)
 	cat "$out/SHA256SUMS"
 	printf 'TERMINAL_STEP_REACHED (external API confirmation still required)\n'
+	grep -Fxq COMPLETE_DNS_EVIDENCE "$out/completeness.txt"
 }
 
 main() {
 	case "${PROBE_MODE:-}" in
 	prepare) prepare ;;
+	confirm) test -s "$(probe_dir)/prepared.marker" ;;
 	snapshot) snapshot hardened ;;
 	payload) payload ;;
 	roundtrip) roundtrip ;;
