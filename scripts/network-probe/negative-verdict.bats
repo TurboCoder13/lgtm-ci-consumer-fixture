@@ -68,3 +68,78 @@ LOG
 	[[ "$output" == *'agent already running'* ]]
 	[[ "$output" != *'incorrectly took a baseline'* ]]
 }
+
+@test "record the real control address before denied-domain substitution" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	timeout() {
+		shift
+		"$@"
+	}
+	getent() { printf '93.184.215.14 STREAM example.com\n93.184.215.14 DGRAM\n'; }
+	run prepare_negative_address
+	[ "$status" -eq 0 ]
+	[ "$(cat "$(probe_dir)/negative-address.txt")" = 93.184.215.14 ]
+}
+
+@test "refuse a pre-hardener sinkhole address" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	timeout() {
+		shift
+		"$@"
+	}
+	getent() { printf '54.185.253.63 STREAM example.com\n'; }
+	run prepare_negative_address
+	[ "$status" -eq 1 ]
+	[ ! -e "$(probe_dir)/negative-address.txt" ]
+}
+
+@test "refuse failed pre-hardener resolution" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	timeout() { return 124; }
+	run prepare_negative_address
+	[ "$status" -eq 1 ]
+	[ ! -e "$(probe_dir)/negative-address.txt" ]
+}
+
+@test "use saved address and preserve exact fresh process evidence requirement" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	printf '93.184.215.14\n' >"$(probe_dir)/negative-address.txt"
+	: >"$events"
+	getent() {
+		printf 'unexpected DNS lookup\n' >&2
+		return 1
+	}
+	curl() {
+		printf '%s\n' "$@" >"$(probe_dir)/curl-arguments.txt"
+		printf 'Sun, 25 Oct 2026 20:00:00 GMT:ip address dropped: 93.184.215.14\n' >>"$events"
+		printf 'Sun, 25 Oct 2026 20:00:00 GMT:endpoint called ip address:port 93.184.215.14:443, domain: , pid: %s, process: curl, status: \n' "$BASHPID" >>"$events"
+		return 7
+	}
+	agent_events() { cat "$events"; }
+	sleep() { :; }
+	systemctl() { printf 'active\n'; }
+	run negative
+	[ "$status" -eq 0 ]
+	[[ "$output" == *'verdict=CONFIRMED_BLOCK'* ]]
+	grep -Fxq 'example.com:443:93.184.215.14' "$(probe_dir)/curl-arguments.txt"
+}
+
+@test "missing saved control address never launches a request" {
+	export RUNNER_TEMP="$BATS_TEST_TMPDIR"
+	mkdir -p "$(probe_dir)"
+	curl() { touch "$(probe_dir)/unexpected-request"; }
+	run negative
+	[ "$status" -eq 1 ]
+	[ ! -e "$(probe_dir)/unexpected-request" ]
+}
+
+@test "DNS denial and sinkhole curl failure alone never confirm local enforcement" {
+	printf 'Sun, 25 Oct 2026 20:35:02 GMT:domain not allowed: example.com.\n' >"$events"
+	run negative_verdict 7 54.185.253.63 3424 active "$events"
+	[ "$status" -eq 1 ]
+	[ "$output" = UNCONFIRMED ]
+}

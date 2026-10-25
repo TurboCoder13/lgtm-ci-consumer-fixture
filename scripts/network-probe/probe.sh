@@ -54,6 +54,19 @@ snapshot() {
 	cat "$out"
 }
 
+prepare_negative_address() {
+	local out address
+	out="$(probe_dir)"
+	# Resolve before the hardener substitutes its denied-domain sinkhole.
+	address="$(timeout 10 getent ahostsv4 example.com | awk 'NR == 1 { print $1 }')" || true
+	if [[ ! "$address" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] ||
+		[[ "$address" == 54.185.253.63 ]]; then
+		printf 'UNCONFIRMED: no usable pre-hardener control address\n' >&2
+		return 1
+	fi
+	printf '%s\n' "$address" >"$out/negative-address.txt"
+}
+
 prepare() {
 	local out helper
 	out="$(probe_dir)"
@@ -66,6 +79,7 @@ prepare() {
 		return 1
 	fi
 	snapshot before
+	prepare_negative_address
 	"${PROBE_NODE:-node}" "$helper/capture.cjs" start "$out"
 	date -u -Is >"$out/prepared.marker"
 	printf 'PRE_HARDENER_READY\n'
@@ -91,10 +105,13 @@ negative_verdict() {
 negative() {
 	local out address before pid result=0 active verdict
 	out="$(probe_dir)"
-	# Active control runs AFTER checkout/roundtrip: do not prime their DNS cache.
-	address="$(getent ahostsv4 example.com | awk 'NR == 1 { print $1 }')" || true
-	if [[ ! "$address" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-		printf 'UNCONFIRMED: example.com did not resolve\n' >"$out/negative.txt"
+	# Use the pre-hardener address: denied-domain DNS returns a sinkhole whose
+	# connection events are intentionally omitted by agent v0.17.0.
+	# The control still runs after checkout/roundtrip and requires exact evidence.
+	address="$(cat "$out/negative-address.txt")" || true
+	if [[ ! "$address" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] ||
+		[[ "$address" == 54.185.253.63 ]]; then
+		printf 'UNCONFIRMED: missing usable pre-hardener control address\n' >"$out/negative.txt"
 		cat "$out/negative.txt"
 		return 1
 	fi
