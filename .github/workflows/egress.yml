@@ -25,7 +25,7 @@ jobs:
       - name: Collect baseline and begin passive DNS capture
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@1461e86226b15f9e67c956e31403c36fe40b3874
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
         with:
           mode: prepare
       - name: Harden using deployed community pin
@@ -44,7 +44,7 @@ jobs:
         if: always()
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@1461e86226b15f9e67c956e31403c36fe40b3874
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
         with:
           mode: snapshot
       - name: Real checkout of dispatched commit
@@ -60,7 +60,7 @@ jobs:
       - name: Prepare synthetic payload
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@1461e86226b15f9e67c956e31403c36fe40b3874
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
         with:
           mode: payload
       - name: Upload synthetic payload
@@ -82,20 +82,20 @@ jobs:
       - name: Verify artifact roundtrip
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@1461e86226b15f9e67c956e31403c36fe40b3874
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
         with:
           mode: roundtrip
       - name: Verify explicitly unallowed traffic is locally blocked
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@1461e86226b15f9e67c956e31403c36fe40b3874
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
         with:
           mode: negative
       - name: Freeze diagnostic evidence even on failure
         if: always()
         # Full SHA action reference must remain contiguous.
         # yamllint disable-line rule:line-length
-        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@1461e86226b15f9e67c956e31403c36fe40b3874
+        uses: TurboCoder13/lgtm-ci-consumer-fixture/scripts/network-probe@a4e398dcdb7fb6e13f188adc1c912f00cd0d94b2
         with:
           mode: finish
       - name: Preserve diagnostic text and checksums
