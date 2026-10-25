@@ -9,7 +9,8 @@ const { setTimeout: delay } = require("node:timers/promises");
 const DNS_FILTER = "(udp port 53 or tcp port 53) and (net 127.0.0.0/8 or host 168.63.129.16)";
 const DOMAIN =
   /(?:^|[\s,])(?:[a-zA-Z0-9_-]+\.)*(?:github\.com|githubapp\.com|githubusercontent\.com|blob\.core\.windows\.net|example\.com)\.(?:[\s,]|$)/;
-const HEADER = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ IP6? /;
+// Linux -i any uses SLL2: interface and packet direction precede IP/IP6.
+const HEADER = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ (?:\S+\s+(?:In|Out|B|M|P|\?)\s+)?IP6? /;
 const utcNow = () => new Date().toISOString();
 
 function writeState({ directory, state }) {
@@ -56,7 +57,7 @@ function createDecoder(emit) {
 
 function completeness({ state, wire, agent }) {
   const reasons = [];
-  if (state.stage !== "frozen" || !state.healthyAtFreeze)
+  if (state.freezeOutcome !== "acknowledged" || state.stage !== "frozen" || !state.healthyAtFreeze)
     reasons.push("capture did not cover the observation window");
   if (!HEADER.test(wire.split("\n")[0] || ""))
     reasons.push("timestamped infrastructure DNS records missing");
@@ -130,8 +131,14 @@ function supervise(directory) {
     state.healthyAtFreeze = state.stage === "running" && !hasExited;
     state.stage = "frozen";
     state.frozenAt = utcNow();
-    fs.copyFileSync(live, path.join(directory, "dns-wire.txt"));
-    fs.writeFileSync(path.join(directory, "capture-status.txt"), `${JSON.stringify(state)}\n`);
+    // Internal result only. The caller exclusively owns published .txt files,
+    // including timeout fallbacks; a delayed acknowledgement cannot rewrite them.
+    const result = path.join(directory, "capture-result.internal");
+    fs.writeFileSync(
+      `${result}.tmp`,
+      JSON.stringify({ state, wire: fs.readFileSync(live, "utf8") }),
+    );
+    fs.renameSync(`${result}.tmp`, result);
     writeState({ directory, state });
     clearInterval(control);
     // Only our still-owned child; timeout independently bounds orphan lifetime.
@@ -165,17 +172,34 @@ async function start(directory) {
   throw new Error("DNS capture did not confirm startup within five seconds");
 }
 
+function publishCapture({ directory, state, wire, freezeOutcome }) {
+  // Write once. No background process ever writes these final artifact names.
+  fs.writeFileSync(path.join(directory, "dns-wire.txt"), wire, { flag: "wx" });
+  fs.writeFileSync(
+    path.join(directory, "capture-status.txt"),
+    `${JSON.stringify({ ...state, freezeOutcome })}\n`,
+    { flag: "wx" },
+  );
+}
+
 async function freeze(directory) {
+  // One publication attempt per job. An incomplete fallback is terminal even
+  // if a stalled supervisor subsequently acknowledges the outstanding request.
+  fs.writeFileSync(path.join(directory, "publication.lock"), utcNow(), { flag: "wx" });
   fs.writeFileSync(path.join(directory, "freeze.request"), utcNow());
+  const result = path.join(directory, "capture-result.internal");
   for (let attempt = 0; attempt < 50; attempt += 1) {
-    if (readState(directory).stage === "frozen") return;
+    if (fs.existsSync(result)) {
+      const captured = JSON.parse(fs.readFileSync(result, "utf8"));
+      publishCapture({ directory, ...captured, freezeOutcome: "acknowledged" });
+      return;
+    }
     await delay(100);
   }
-  // Preserve partial data and explicit incompleteness; never call it frozen.
   const state = readState(directory);
-  fs.writeFileSync(path.join(directory, "capture-status.txt"), `${JSON.stringify(state)}\n`);
   const live = path.join(directory, "dns-wire.live");
-  if (fs.existsSync(live)) fs.copyFileSync(live, path.join(directory, "dns-wire.txt"));
+  const wire = fs.existsSync(live) ? fs.readFileSync(live, "utf8") : "";
+  publishCapture({ directory, state, wire, freezeOutcome: "timeout" });
   throw new Error("DNS capture did not acknowledge freeze; evidence incomplete");
 }
 

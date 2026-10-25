@@ -5,9 +5,9 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { spawnSync } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const { setTimeout: delay } = require("node:timers/promises");
-const { createDecoder, completeness, freeze } = require("./capture.cjs");
+const { createDecoder, completeness, freeze, verify } = require("./capture.cjs");
 
 const query =
   "2026-10-25 21:00:00.123456 IP (proto UDP (17), length 60)\n" +
@@ -20,7 +20,7 @@ const initialized =
 
 function valid() {
   return {
-    state: { stage: "frozen", healthyAtFreeze: true },
+    state: { stage: "frozen", healthyAtFreeze: true, freezeOutcome: "acknowledged" },
     wire: query + answer,
     agent: initialized,
   };
@@ -153,4 +153,88 @@ for (const scenario of ["unavailable", "startup-error", "early-exit"])
 
 test("a DNS reply question section is not evidence of an observed query", () => {
   assert.notEqual(completeness({ ...valid(), wire: answer }).length, 0);
+});
+
+test("retain decoded Linux SLL2 interface and direction metadata", () => {
+  // Offline tcpdump -i any SLL2 output shape from the independent reproduction.
+  const cooked =
+    query.replace(" IP (", " lo0   Out IP (") + answer.replace(" IP (", " lo0   In  IP (");
+  let result = "";
+  const decoder = createDecoder((record) => (result += record));
+  for (let offset = 0; offset < cooked.length; offset += 7)
+    decoder.feed(cooked.slice(offset, offset + 7));
+  decoder.flush();
+  assert.equal(result, cooked);
+  assert.deepEqual(completeness({ ...valid(), wire: result }), []);
+});
+
+test("freeze timeout is terminal and late acknowledgement cannot mutate published evidence", async (context) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "ci1203-delayed-"));
+  const bin = path.join(directory, "bin");
+  fs.mkdirSync(bin);
+  fs.writeFileSync(
+    path.join(bin, "sudo"),
+    `#!${process.execPath}\n` +
+      `process.stderr.write('tcpdump: listening on any\\n');\n` +
+      `process.stdout.write(${JSON.stringify(query + answer)});\n` +
+      `setTimeout(() => process.stdout.write(${JSON.stringify(query + answer)}), 1500);\n` +
+      `setTimeout(() => process.exit(0), 8000);\n`,
+    { mode: 0o755 },
+  );
+  // This test owns the child handle. It never reads or signals a persisted PID.
+  const supervisor = spawn(
+    process.execPath,
+    [path.join(__dirname, "capture.cjs"), "supervise", directory],
+    {
+      env: { ...process.env, PATH: `${bin}${path.delimiter}${process.env.PATH}` },
+      stdio: "ignore",
+    },
+  );
+  context.after(() => {
+    if (supervisor.exitCode === null) {
+      supervisor.kill("SIGCONT");
+      supervisor.kill("SIGTERM");
+    }
+    fs.rmSync(directory, { recursive: true, force: true });
+  });
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const stateFile = path.join(directory, "capture-state.live");
+    if (
+      fs.existsSync(stateFile) &&
+      JSON.parse(fs.readFileSync(stateFile, "utf8")).stage === "running"
+    )
+      break;
+    await delay(100);
+  }
+  supervisor.kill("SIGSTOP");
+  await assert.rejects(freeze(directory), /did not acknowledge freeze/);
+  fs.writeFileSync(path.join(directory, "final.txt"), initialized);
+  assert.equal(verify(directory), 1);
+  const names = ["dns-wire.txt", "capture-status.txt", "completeness.txt"];
+  const original = names.map((name) => fs.readFileSync(path.join(directory, name)));
+  const manifest = original
+    .map(
+      (data, index) => `${crypto.createHash("sha256").update(data).digest("hex")}  ${names[index]}`,
+    )
+    .join("\n");
+  fs.writeFileSync(path.join(directory, "SHA256SUMS"), manifest);
+  supervisor.kill("SIGCONT");
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (fs.existsSync(path.join(directory, "capture-result.internal"))) break;
+    await delay(100);
+  }
+  assert.ok(fs.existsSync(path.join(directory, "capture-result.internal")));
+  for (let index = 0; index < names.length; index += 1)
+    assert.deepEqual(fs.readFileSync(path.join(directory, names[index])), original[index]);
+  assert.equal(verify(directory), 1);
+  assert.equal(fs.readFileSync(path.join(directory, "SHA256SUMS"), "utf8"), manifest);
+  for (let index = 0; index < names.length; index += 1)
+    assert.deepEqual(fs.readFileSync(path.join(directory, names[index])), original[index]);
+  await assert.rejects(freeze(directory), /EEXIST/);
+});
+
+test("freeze timeout remains unconfirmed even with otherwise complete frozen state", () => {
+  const evidence = valid();
+  evidence.state.freezeOutcome = "timeout";
+  assert.notEqual(completeness(evidence).length, 0);
 });
