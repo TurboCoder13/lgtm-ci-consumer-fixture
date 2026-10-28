@@ -21,7 +21,7 @@ permissions: {}
 jobs:
   facade-without-resume-scopes:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-recover.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-recover.yml@3244a18dcb302e55cafc1e0045967c5382040b74  # v0.78.1
     permissions:
       actions: read
       contents: read
@@ -32,4 +32,4 @@ jobs:
       source-workflow: .github/workflows/recover.yml
       dry-run: false
       # v0.78.1
-      tooling-ref: 2097a900753e3e5ad0e336483501b278e99855ae # lgtm-ci-pin
+      tooling-ref: 3244a18dcb302e55cafc1e0045967c5382040b74 # lgtm-ci-pin

@@ -24,7 +24,7 @@ jobs:
   audit-smoke:
     # Enforcement probes below are opt-in; this always exercises audit mode.
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@3244a18dcb302e55cafc1e0045967c5382040b74  # v0.78.1
     permissions:
       actions: read
       contents: read
@@ -45,7 +45,7 @@ jobs:
   block-explicit-list:
     if: vars.EGRESS_BLOCK_PROBES_ENABLED == 'true'
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@3244a18dcb302e55cafc1e0045967c5382040b74  # v0.78.1
     permissions:
       actions: read
       contents: read
@@ -80,7 +80,7 @@ jobs:
   preset-pypi-allows-pypi-host:
     if: vars.EGRESS_BLOCK_PROBES_ENABLED == 'true'
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@3244a18dcb302e55cafc1e0045967c5382040b74  # v0.78.1
     permissions:
       actions: read
       contents: read
@@ -109,7 +109,7 @@ jobs:
   preset-github-tooling-denies-pypi-host:
     if: vars.EGRESS_BLOCK_PROBES_ENABLED == 'true'
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@3244a18dcb302e55cafc1e0045967c5382040b74  # v0.78.1
     permissions:
       actions: read
       contents: read
