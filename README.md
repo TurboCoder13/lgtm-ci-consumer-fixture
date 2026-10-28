@@ -1,3 +1,4 @@
+<!-- TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207 -->
 # lgtm-ci consumer fixture
 
 A deliberately external consumer of [lgtm-hq/lgtm-ci](https://github.com/lgtm-hq/lgtm-ci).
@@ -14,7 +15,7 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `rust.yml` | push, dispatch | Rust path; only the Rust toolchain installed; consumer ships `.config/nextest.toml` |
 | `siblings.yml` | push, dispatch | Two calls in one run produce distinct `python-results-*` names (#752) — but see the coverage caveat under [Retry convergence](#retry-convergence); target of the retry check below |
 | `retry.yml` | push, dispatch | Lone reusable call for re-running without a sibling (#803/#717) |
-| `egress.yml` | push, dispatch | Explicit allowlist denies a probe to `example.com`; preset-only job documents #913 |
+| `egress.yml` | push, dispatch | Audit smoke runs normally; opt-in block probes verify allowlist denies and preset selection (#913). See [Temporary egress mitigation](#temporary-egress-mitigation) |
 | `perms.yml` | push, dispatch | Documented-minimum caller permissions (`contents: read`, `pull-requests: write`) parse and run (#735/#736) |
 | `perms-negative.yml` | dispatch only (by its probe) | **Negative:** `contents: read` alone. Expected `startup_failure` at parse time; observed: see [Permission negative test](#permission-negative-test) |
 | `readonly-node.yml` | push, dispatch | Generated read-only variant `reusable-test-node-run.yml` (lgtm-ci #1081) called with `actions: read` + `contents: read` only (no `pull-requests: write`): the run starting proves its union is read-only; the `check` job asserts the tests ran (`passed`, `tests-total > 0`). One `readonly-<family>.yml` per variant, so each is its own canary gate |
@@ -45,6 +46,51 @@ passes **no `tooling-ref`**, and contains **no copied lgtm-ci actions or scripts
 | `playwright-negative.yml` | dispatch only (by its probe) | **Negative-by-design:** project `chromium-failing` always fails; the verdict is `verify-report`, which asserts the failure-path artifact contains `index.html`. Baseline: artifact held only `playwright-results.json`; since #1104 the HTML report is present |
 | `verify-negative.yml` | dispatch only (by its probe) | **Negative-by-design:** wrong committed digests for cargo-nextest and osv-scanner injected through the reusables' caller-script inputs; both jobs must be refused with a `digest mismatch` annotation (#1096) |
 | `perms-negative-probe.yml`, `playwright-negative-probe.yml`, `verify-negative-probe.yml` | dispatch only | Dispatch their negative on the same ref and assert it failed **as designed**; green when it did, red when it passed or failed for another reason. See [Negative probes](#negative-probes) |
+
+## Temporary egress mitigation
+
+[TEMP: lgtm-hq/lgtm-ci#1207](https://github.com/lgtm-hq/lgtm-ci/issues/1207):
+ordinary jobs explicitly use `egress-policy: audit` while
+[step-security/harden-runner#708](https://github.com/step-security/harden-runner/issues/708)
+is open. This includes negative tests for permissions, digest verification,
+App-token reach, and hook tampering: their failure assertions do not depend on
+network enforcement and remain intact. The private dependency fixture's stale
+lockfile and the vulnerable Docker fixture remain unchanged.
+
+The three enforcement jobs in `egress.yml` retain `egress-policy: block` and
+all their original allow/deny assertions. They run only when the repository
+variable `EGRESS_BLOCK_PROBES_ENABLED` equals the string `true`; an unset variable
+skips them. `vuln-suppression.yml` also retains an opt-in `check-block` job for its
+block-mode installer proof. The normal egress audit smoke and suppression audit
+check still run, so a green canary demonstrates audit functionality while the
+block probes are disabled. It does not certify egress enforcement.
+
+To restore enforcement coverage after the upstream fix is released and the
+harden-runner/lgtm-ci pins have been updated, set that variable to `true` in the
+repository's Actions variables and dispatch `egress.yml` and
+`vuln-suppression.yml`. The optional block jobs pass `timeout-minutes: 8` to their
+reusables (the Node prepare/aggregate helpers retain their own upstream caps).
+Unset the variable or set it to `false` to disable the probes again. This
+mitigation does not create or modify any repository variable.
+
+Skipping three block Node calls and retaining one audit smoke call reduces the
+normal egress workflow's fan-out. No concurrency group spans candidate refs:
+canceling another candidate's fixture run would fail that candidate's canary.
+The upstream `.github/workflows/external-consumer-canary.yml` currently groups
+by candidate SHA, so different candidates can dispatch concurrently. Its
+`scripts/ci/actions/external-canary.sh` dispatches the whole set before
+`poll_runs` starts one shared `CANARY_TIMEOUT_SECONDS=1500` deadline, including
+queue time; this is not a timeout measured per running workflow. Cleanup deletes
+the canary branch but does not cancel unfinished fixture runs.
+
+Queue control therefore needs an upstream follow-up: bound concurrent canary
+batches across candidates without canceling live unrelated candidates, dispatch
+through a bounded window that reserves runner capacity for nested jobs and
+negative-probe children, track queue and execution deadlines separately under
+an overall bound, and cancel only unfinished runs owned by that canary (including
+probe children) on timeout or cancellation before deleting its branch. Increasing
+the timeout alone leaves abandoned runs consuming the personal account's runner
+capacity.
 
 ## Pinning to a candidate
 
