@@ -1,3 +1,5 @@
+# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
+# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — read-only shell variant (lgtm-ci #1081)
 # Calls the generated read-only variant reusable-test-shell-run.yml granting
 # only read scopes: no pull-requests: write. GitHub validates the called
@@ -20,11 +22,12 @@ permissions: {}
 jobs:
   shell:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-shell-run.yml@eae062ce40ce20fee8123f1ab609d4c5a57d8be2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-shell-run.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
     permissions:
       actions: read
       contents: read
     with:
+      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
       job-name: "Shell Tests (read-only)"
       working-directory: shell
       test-path: tests/bats
