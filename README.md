@@ -40,7 +40,7 @@ reference. Tracked by lgtm-hq/lgtm-ci#1074.
 | `actions-direct.yml`                                                                     | push, dispatch               | Direct `uses: lgtm-hq/lgtm-ci/.github/actions/run-*@sha` path (#1075)                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `app-token-probe.yml`                                                                    | dispatch only                | Reach of a GitHub App token minted as the release reusables do (`owner` only, no `repositories:`): single-repo install sees exactly one repo; scoped variant works; sibling repo refused (#849)                                                                                                                                                                                                                                                                                           |
 | `release-version-pr.yml`                                                                 | dispatch only                | `reusable-release-version-pr` from outside the org: App token, python ecosystem under `python/`, opens a version PR (closed by hand). See [Release paths](#release-paths)                                                                                                                                                                                                                                                                                                                 |
-| `release-tamper-hook.yml`                                                                | dispatch only                | **Negative-by-design:** `version-update-script` rewrites the next lgtm-ci script in the tooling checkout. Expected to succeed on today's lgtm-ci, must fail after #849                                                                                                                                                                                                                                                                                                                    |
+| `release-tamper-hook.yml`                                                                | dispatch only                | **Negative-by-design:** `version-update-script` attempts to rewrite the next lgtm-ci script in the tooling checkout. The pinned post-#849 lgtm-ci must fail before PR creation; success is pre-#849 history                                                                                                                                                                                                                                                                               |
 | `release-benign-hook.yml`                                                                | dispatch only                | Well-behaved `version-update-script` (#849): edits `HOOK_RELEASE_INFO.txt` from `NEXT_VERSION` and `release-metadata.json`, asserts no token and read-only tooling; the edit must reach the version PR                                                                                                                                                                                                                                                                                    |
 | `sbom-release-upload.yml`                                                                | dispatch only                | `reusable-sbom-release-upload.yml` against a disposable prerelease `vfixture-<run_id>` (#935): asserts the SBOM assets are attached via `gh api -X GET`, then deletes the release and tag. See [SBOM release upload](#sbom-release-upload)                                                                                                                                                                                                                                                |
 | `python-private-dep.yml`                                                                 | dispatch only                | **Negative-by-design on pre-#1021 lgtm-ci:** `python-private-dep/` has a git dependency on the private sibling `trader-service` in group `engine` (never installed) and a deliberately stale `uv.lock` (version bumped without `uv lock`). No secret passed. Plain `uv sync` re-resolves and dies on `could not read Username for 'https://github.com'`; `uv sync --frozen` (lgtm-ci #1021) installs the lock verbatim and passes                                                         |
@@ -105,8 +105,10 @@ scripts/pin.sh <lgtm-ci-sha>   # rewrites every uses: line and prints the result
 Commit and push to `main`, or dispatch each workflow by hand. Every workflow
 runs on `workflow_dispatch`; the push-path workflows also run on push to `main`,
 and `python.yml` / `node-bun.yml` run on pull requests to `main`. Dispatch a
-negative through its `*-probe.yml`, not directly, so an expected failure does
-not stay red.
+negative through its `*-probe.yml` when listed below, so an expected failure
+does not stay red. Permission negatives without a probe require direct dispatch
+and remain red as described below. Docker scan failures use
+`docker-scan-failure-probe.yml`.
 
 ## Negative probes
 
@@ -114,8 +116,9 @@ A negative-by-design run is red on the Actions page even when it proves what it
 should. It cannot be turned green from inside: a job that calls a reusable
 workflow does not accept `continue-on-error`, so a failed call fails the run,
 and `perms-negative.yml` is rejected at parse time (`startup_failure`), before
-any job of its own could look at the result. Each negative therefore has a
-probe, `<name>-probe.yml`, which calls the shared `negative-probe.yml`:
+any job of its own could look at the result. The four negatives in the table
+below have a probe, `<name>-probe.yml`, which calls the shared
+`negative-probe.yml`:
 `scripts/negative/probe.sh` dispatches the negative on the probe's ref (the
 dispatch API returns the run id), waits for it, and checks:
 
@@ -124,6 +127,15 @@ dispatch API returns the run id), waits for it, and checks:
 | `perms-negative.yml`      | `startup_failure` | zero jobs created                                                                             |
 | `playwright-negative.yml` | `failure`         | `e2e-failing / Playwright E2E …` failed; `Verify failure-path HTML report artifact` succeeded |
 | `verify-negative.yml`     | `failure`         | both `NEGATIVE … wrong digest` jobs failed **and** raised the `digest mismatch` annotation    |
+| `docker-scan-failure.yml` | `failure`         | both per-platform Docker builds failed; `Verify SARIF reached code scanning` succeeded        |
+
+The other permission negatives (`perms-negative-node.yml`,
+`perms-negative-shell.yml`, `perms-negative-rust.yml`,
+`perms-negative-docker.yml`, and `perms-negative-recover.yml`) have no probe.
+Dispatch them directly and inspect their expected `startup_failure` with zero
+jobs; these runs remain red and are not automatically deleted. The release
+tamper negative also requires direct dispatch and inspection of the evidence
+described in its workflow entry above.
 
 When every check holds, the probe writes the negative's jobs and annotations to
 its job summary and the `negative-evidence` artifact, **deletes the red negative
@@ -212,18 +224,19 @@ runs. Close the previous PR before dispatching again — the reusable skips when
 version PR already exists.
 
 `release-tamper-hook.yml` is the #849 probe: `scripts/tamper-hook.sh` runs as
-the `version-update-script` and rewrites `check-version-files-changed.sh` in the
-`.lgtm-ci-tooling` checkout so it prints `::warning::TAMPERED`. On today's
-lgtm-ci the hook shares a job — filesystem and App token — with the tooling that
-follows it, so the marker is expected to appear; after #849 the run must fail
-before any PR, branch or commit is created.
+the `version-update-script` and attempts to rewrite
+`check-version-files-changed.sh` in the `.lgtm-ci-tooling` checkout. The pinned
+post-#849 lgtm-ci runs the hook without an App token and makes the tooling
+checkout read-only, so the run must fail before any PR, branch or commit is
+created. The `::warning::TAMPERED` marker and PR were expected only with the
+pre-#849 lgtm-ci.
 
 `release-benign-hook.yml` is the positive counterpart: `scripts/benign-hook.sh`
 rewrites the tracked `HOOK_RELEASE_INFO.txt` from `NEXT_VERSION` and the
 read-only `release-metadata.json` that lgtm-ci writes for the hook, and fails
 itself if a token is in its environment or the tooling checkout is writable.
-After #849 the file's edit must appear in the version PR, carried from the
-`version-update-hook` job to `Create Version PR` as a diff artifact.
+On the pinned post-#849 lgtm-ci, the file's edit must appear in the version PR,
+carried from the `version-update-hook` job to `Create Version PR` as a diff artifact.
 
 Results (lgtm-ci `fab929f1`, 2026-10-04):
 

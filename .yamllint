@@ -2,5 +2,18 @@
 extends: default
 # pnpm generates integrity hashes longer than 80 columns. Audit this lockfile
 # with OSV; do not hand-format package-manager output to satisfy a style rule.
+# Negative callers keep their original inputs and formatting. Lintro runs
+# yamllint from each file's directory, so match these exact basenames there
+# and from the repository root. Actionlint still checks every workflow.
 ignore: |
   **/pnpm-lock.yaml
+  **/verify-negative.yml
+  **/release-tamper-hook.yml
+  **/perms-negative.yml
+  **/perms-negative-node.yml
+  **/perms-negative-shell.yml
+  **/perms-negative-rust.yml
+  **/perms-negative-docker.yml
+  **/perms-negative-recover.yml
+  **/playwright-negative.yml
+  **/docker-scan-failure.yml

@@ -6,23 +6,13 @@
 **/target/**
 # EOL image must retain vulnerabilities for the Trivy failure/SARIF probe.
 docker/Dockerfile.vulnerable
+# Workflow style exceptions live in .yamllint so actionlint sees every caller.
 # Wrong checksums and tooling tampering are the supply-chain test inputs.
 # scripts/negative/probe.sh remains checked: it is the assertion harness.
 scripts/negative/*wrong-digest.sh
 scripts/tamper-hook.sh
-.github/workflows/verify-negative.yml
-.github/workflows/release-tamper-hook.yml
-# These callers intentionally omit permissions required by the callee.
-.github/workflows/perms-negative.yml
-.github/workflows/perms-negative-node.yml
-.github/workflows/perms-negative-shell.yml
-.github/workflows/perms-negative-rust.yml
-.github/workflows/perms-negative-docker.yml
-.github/workflows/perms-negative-recover.yml
 # The failing project/caller exercises failure-report artifact publication.
 playwright/tests/failing.spec.js
-.github/workflows/playwright-negative.yml
-.github/workflows/docker-scan-failure.yml
 # Deliberately stale metadata/private git source proves frozen installation.
 python-private-dep/pyproject.toml
 python-private-dep/uv.lock
