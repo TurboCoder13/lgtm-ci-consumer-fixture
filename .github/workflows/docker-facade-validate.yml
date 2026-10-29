@@ -66,7 +66,11 @@ jobs:
           for attempt in {1..9}; do
             analyses="$(gh api -X GET "$api" \
               -f ref="$GITHUB_REF" -f per_page=100 \
-              --jq ".[] | select(.analysis_key == \"$key\") | .category")"
+              --jq ".[] | select(.analysis_key == \"$key\") | .category" \
+              2>/dev/null)" || {
+              analyses=""
+              echo "attempt $attempt: analyses lookup failed"
+            }
             if grep -qx "trivy-linux-amd64" <<<"$analyses" &&
               grep -qx "trivy-linux-arm64" <<<"$analyses"; then
               echo "$analyses"
