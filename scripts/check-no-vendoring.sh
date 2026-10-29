@@ -5,9 +5,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 bad=0
 for p in .github/actions scripts/ci .lgtm-ci-tooling; do
-  if [[ -e "$p" ]]; then
-    echo "::error::vendored lgtm-ci path present: $p"
-    bad=1
-  fi
+	if [[ -e "$p" ]]; then
+		echo "::error::vendored lgtm-ci path present: $p"
+		bad=1
+	fi
 done
 exit "$bad"

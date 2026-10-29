@@ -1,0 +1,6 @@
+---
+extends: default
+# pnpm generates integrity hashes longer than 80 columns. Audit this lockfile
+# with OSV; do not hand-format package-manager output to satisfy a style rule.
+ignore: |
+  **/pnpm-lock.yaml

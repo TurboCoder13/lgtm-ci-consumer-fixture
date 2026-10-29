@@ -3,7 +3,8 @@
 # lgtm-ci external-consumer fixture — documented-minimum caller permissions
 # (#735, #736). actions:read + contents:read + pull-requests:write is the
 # documented block for test reusables on push; the internal publish job declares
-# pull-requests:write even when disabled, the aggregate job declares actions:read
+# pull-requests:write even when disabled, the aggregate job declares
+# actions:read
 # for its artifact-availability wait (#803), and GitHub validates both at parse
 # time.
 # Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref, from outside the

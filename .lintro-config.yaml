@@ -1,0 +1,11 @@
+---
+# Check maintained source while preserving deliberately invalid test inputs.
+# Lintro 0.81 reads file exclusions from .lintro-ignore; execution.exclude
+# is silently ignored. The documented fixture patterns live there so chk
+# and fmt use the same supported exclusion list. No tools are disabled.
+
+tools:
+  markdownlint:
+    config_source: '.markdownlint-cli2.jsonc'
+  yamllint:
+    config_source: '.yamllint'

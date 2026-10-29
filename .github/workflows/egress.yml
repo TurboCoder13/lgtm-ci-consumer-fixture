@@ -100,8 +100,10 @@ jobs:
       allowed-endpoints-mode: append
       pre-test-command: >-
         if curl -sS --max-time 10 -o /dev/null https://files.pythonhosted.org/;
-        then echo "egress to files.pythonhosted.org ALLOWED (pypi preset enforced)";
-        else echo "::error::egress to files.pythonhosted.org DENIED — pypi preset did not reach harden-runner"; exit 1; fi
+        then echo "egress to files.pythonhosted.org ALLOWED (pypi preset
+        enforced)";
+        else echo "::error::egress to files.pythonhosted.org DENIED — pypi
+        preset did not reach harden-runner"; exit 1; fi
 
   # #913 negative control: same inputs but a preset WITHOUT the probe host.
   # Must be DENIED before and after #913 — proves `append` does not grant
@@ -129,5 +131,7 @@ jobs:
       allowed-endpoints-mode: append
       pre-test-command: >-
         if curl -sS --max-time 10 -o /dev/null https://files.pythonhosted.org/;
-        then echo "::error::egress to files.pythonhosted.org was NOT blocked — preset leaked hosts it does not contain"; exit 1;
-        else echo "egress to files.pythonhosted.org blocked as expected (not in github-tooling)"; fi
+        then echo "::error::egress to files.pythonhosted.org was NOT blocked —
+        preset leaked hosts it does not contain"; exit 1;
+        else echo "egress to files.pythonhosted.org blocked as expected (not in
+        github-tooling)"; fi

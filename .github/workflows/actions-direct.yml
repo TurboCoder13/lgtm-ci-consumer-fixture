@@ -23,7 +23,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Assert no lgtm-ci source in the workspace
@@ -41,7 +42,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Assert no lgtm-ci source in the workspace
@@ -60,7 +62,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Assert no lgtm-ci source in the workspace
@@ -79,7 +82,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Assert no lgtm-ci source in the workspace
@@ -124,11 +128,23 @@ jobs:
           set -euo pipefail
           manifest=lighthouse/lighthouse-reports/manifest.json
           runs="$(jq length "$manifest")"
-          rep="$(jq -r '[.[] | select(.isRepresentativeRun)][0].jsonPath' "$manifest")"
+          rep="$(jq -r \
+            '[.[] | select(.isRepresentativeRun)][0].jsonPath' "$manifest")"
           echo "runs=${runs} representative=${rep} scored=${RESULTS_PATH}"
           [[ "$runs" -ge 2 ]] ||
-            { echo "::error::expected a multi-run manifest, got ${runs} run(s)"; exit 1; }
-          [[ -n "$RESULTS_PATH" && "$(realpath "$RESULTS_PATH")" == "$(realpath "$rep")" ]] ||
-            { echo "::error::scored '${RESULTS_PATH}', not the representative run ${rep}"; exit 1; }
+            {
+              echo "::error::expected a multi-run manifest, got ${runs} run(s)"
+              exit 1
+            }
+          [[ -n "$RESULTS_PATH" &&
+            "$(realpath "$RESULTS_PATH")" == "$(realpath "$rep")" ]] ||
+            {
+              echo "::error::scored '${RESULTS_PATH}'," \
+                "not the representative run ${rep}"
+              exit 1
+            }
           [[ "$PASSED" == "true" && "$PERFORMANCE" -gt 0 ]] ||
-            { echo "::error::passed=${PASSED} performance=${PERFORMANCE}"; exit 1; }
+            {
+              echo "::error::passed=${PASSED} performance=${PERFORMANCE}"
+              exit 1
+            }

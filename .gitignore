@@ -10,3 +10,7 @@ vitest-results.json
 coverage/
 .lgtm-ci-tooling/
 playwright-results.xml
+
+.lintro/
+.coverage
+.lighthouseci/

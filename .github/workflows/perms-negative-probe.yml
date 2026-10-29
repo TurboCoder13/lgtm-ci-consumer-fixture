@@ -10,7 +10,8 @@ name: fixture-perms-negative-probe
   workflow_dispatch:
     inputs:
       keep-negative-run:
-        description: Keep the perms-negative run after a passing probe (default deletes it)
+        description: >-
+          Keep the perms-negative run after a passing probe (default deletes it)
         type: boolean
         default: false
 

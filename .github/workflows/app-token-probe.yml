@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Harden runner
         # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2  # v2.22.2
         with:
           egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
           allowed-endpoints: >
@@ -43,7 +43,7 @@ jobs:
       - name: Create GitHub App installation token (owner only)
         id: app-token
         # yamllint disable-line rule:line-length
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
         with:
           app-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Harden runner
         # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2  # v2.22.2
         with:
           egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
           allowed-endpoints: >
@@ -95,7 +95,7 @@ jobs:
       - name: Create GitHub App installation token (scoped to this repo)
         id: app-token
         # yamllint disable-line rule:line-length
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
         with:
           app-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
@@ -134,7 +134,7 @@ jobs:
     steps:
       - name: Harden runner
         # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2  # v2.22.2
         with:
           egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
           allowed-endpoints: >
@@ -143,7 +143,7 @@ jobs:
       - name: Create GitHub App installation token (owner only)
         id: app-token
         # yamllint disable-line rule:line-length
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
         with:
           app-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
@@ -168,26 +168,31 @@ jobs:
           echo "private sibling exit=${rc}"
           echo "$out" | head -3
           if [[ "$rc" -eq 0 ]]; then
-            echo "::error::owner-only token read private ${PRIVATE_SIBLING}; App reach is wider than its installation"
+            echo "::error::owner-only token read private ${PRIVATE_SIBLING};" \
+              "App reach is wider than its installation"
             exit 1
           fi
           if ! grep -qE 'HTTP (403|404)' <<<"$out"; then
-            echo "::error::expected HTTP 403/404 on ${PRIVATE_SIBLING}, got: ${out}"
+            echo "::error::expected HTTP 403/404 on ${PRIVATE_SIBLING}," \
+              "got: ${out}"
             exit 1
           fi
           private_status=$(grep -oE 'HTTP (403|404)' <<<"$out" | head -1)
           echo "OK: ${PRIVATE_SIBLING} refused (${private_status})"
 
-          perms=$(gh api -X GET "repos/${PUBLIC_SIBLING}" --jq '.permissions | "admin=\(.admin) push=\(.push) pull=\(.pull)"')
+          perms=$(gh api -X GET "repos/${PUBLIC_SIBLING}" --jq \
+            '.permissions | "admin=\(.admin) push=\(.push) pull=\(.pull)"')
           echo "public sibling permissions: ${perms}"
           if [[ "$perms" != "admin=false push=false pull=false" ]]; then
-            echo "::error::owner-only token holds permissions on public ${PUBLIC_SIBLING}: ${perms}"
+            echo "::error::owner-only token holds permissions on public" \
+              "${PUBLIC_SIBLING}: ${perms}"
             exit 1
           fi
           echo "OK: ${PUBLIC_SIBLING} readable only at anonymous level"
           {
             echo "### Negative reach"
             echo
-            echo "- \`${PRIVATE_SIBLING}\` (private): refused (\`${private_status}\`)"
+            echo "- \`${PRIVATE_SIBLING}\` (private):" \
+              "refused (\`${private_status}\`)"
             echo "- \`${PUBLIC_SIBLING}\` (public): \`${perms}\`"
           } >> "$GITHUB_STEP_SUMMARY"
