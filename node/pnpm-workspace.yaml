@@ -1,3 +1,4 @@
+---
 # pnpm settings for the node fixture. pnpm 11+ fails a frozen install on any
 # dependency build script not listed here (strictDepBuilds). esbuild's platform
 # binary comes from its optional dependency, so its postinstall stays skipped,

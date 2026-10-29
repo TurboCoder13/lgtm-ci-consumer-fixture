@@ -11,7 +11,8 @@ name: fixture-docker-scan-failure-probe
   workflow_dispatch:
     inputs:
       keep-negative-run:
-        description: Keep the negative run after a passing probe (default deletes it)
+        description: >-
+          Keep the negative run after a passing probe (default deletes it)
         type: boolean
         default: false
 

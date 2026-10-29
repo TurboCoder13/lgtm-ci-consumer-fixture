@@ -58,7 +58,7 @@ jobs:
           subject-path: dist/fixture-recover.txt
       - name: Upload the recovery source artifact
         # yamllint disable-line rule:line-length
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: recover-dist
           path: dist/
@@ -91,7 +91,7 @@ jobs:
       signer-repo: ${{ github.repository }}
       signer-workflow: .github/workflows/recover.yml
       # v0.78.1
-      tooling-ref: 2097a900753e3e5ad0e336483501b278e99855ae # lgtm-ci-pin
+      tooling-ref: 2097a900753e3e5ad0e336483501b278e99855ae  # lgtm-ci-pin
 
   check-plan:
     needs: [plan]
@@ -129,7 +129,7 @@ jobs:
       signer-workflow: .github/workflows/recover.yml
       dry-run: true
       # v0.78.1
-      tooling-ref: 2097a900753e3e5ad0e336483501b278e99855ae # lgtm-ci-pin
+      tooling-ref: 2097a900753e3e5ad0e336483501b278e99855ae  # lgtm-ci-pin
 
   check-dry-run:
     needs: [source, dry-run]
@@ -168,7 +168,7 @@ jobs:
       signer-workflow: .github/workflows/recover.yml
       dry-run: false
       # v0.78.1
-      tooling-ref: 2097a900753e3e5ad0e336483501b278e99855ae # lgtm-ci-pin
+      tooling-ref: 2097a900753e3e5ad0e336483501b278e99855ae  # lgtm-ci-pin
 
   verify:
     needs: [source, resume]

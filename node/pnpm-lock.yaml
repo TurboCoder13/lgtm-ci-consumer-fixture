@@ -167,10 +167,10 @@ importers:
   .:
     devDependencies:
       '@vitest/coverage-v8':
-        specifier: ^5.0.0
+        specifier: ^5.0.5
         version: 5.0.5(vitest@5.0.5)
       vitest:
-        specifier: ^5.0.0
+        specifier: ^5.0.5
         version: 5.0.5(@vitest/coverage-v8@5.0.5)(vite@7.3.7)
 
 packages:

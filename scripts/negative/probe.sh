@@ -88,7 +88,10 @@ expected="$(expectations "$negative")"
 
 run_id="$(gh api -X POST "repos/${GH_REPO}/actions/workflows/${negative}/dispatches" \
 	-f ref="$PROBE_REF" -F return_run_details=true --jq .workflow_run_id)"
-[[ "$run_id" =~ ^[0-9]+$ ]] || { echo "::error::dispatch of ${negative} returned no run id: '${run_id}'" >&2; exit 1; }
+[[ "$run_id" =~ ^[0-9]+$ ]] || {
+	echo "::error::dispatch of ${negative} returned no run id: '${run_id}'" >&2
+	exit 1
+}
 echo "dispatched ${negative} on ${PROBE_REF}: run ${run_id}"
 
 deadline=$((SECONDS + PROBE_TIMEOUT_SECONDS))

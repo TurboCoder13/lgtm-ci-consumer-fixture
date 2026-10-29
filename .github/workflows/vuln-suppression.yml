@@ -2,7 +2,8 @@
 # Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — osv-scanner install path
 # (reusable-vuln-suppression-check). Calls lgtm-hq/lgtm-ci at an exact SHA with
-# NO tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh <sha>
+# NO tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh
+# <sha>
 #
 # The fixture ships no .osv-scanner.toml, so the suppression check itself is a
 # no-op; the job exists to prove the digest-verified osv-scanner install

@@ -34,7 +34,8 @@ jobs:
     steps:
       # Deliberately no `with:` — default fetch-depth (1) and
       # persist-credentials (true), the setup the public docs show.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Assert no lgtm-ci source in the workspace
         run: scripts/check-no-vendoring.sh
       - name: Reproduce the tag-event checkout shape
@@ -45,14 +46,17 @@ jobs:
           case "$REF" in
             refs/tags/*) echo "tag event: checkout fetched only the tag" ;;
             *) git update-ref -d refs/remotes/origin/main
-               echo "branch event: dropped refs/remotes/origin/main to match a tag checkout" ;;
+               echo "branch event: dropped refs/remotes/origin/main" \
+                 "to match a tag checkout" ;;
           esac
           if git show-ref --verify --quiet refs/remotes/origin/main; then
-            echo "::error::refs/remotes/origin/main exists; this fixture needs a shallow checkout without it"
+            echo "::error::refs/remotes/origin/main exists;" \
+              "this fixture needs a shallow checkout without it"
             exit 1
           fi
           echo "shallow checkout confirmed; refs/remotes/origin/main absent"
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      # v10.3.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
         with:
           python-version: "3.12"
       - name: build-python-package (direct)
@@ -66,7 +70,9 @@ jobs:
           # `canary/<sha>` branch whose commit is, by construction, not on
           # main; there the preflight would correctly abort. Enforce the
           # on-default-branch check only where it can hold (main and tags).
-          ensure-tag-on-default-branch: ${{ startsWith(github.ref, 'refs/tags/') || github.ref_name == 'main' }}
+          ensure-tag-on-default-branch: >-
+            ${{ startsWith(github.ref, 'refs/tags/') ||
+            github.ref_name == 'main' }}
       - name: Show outputs
         env:
           NAME: ${{ steps.build.outputs.package-name }}

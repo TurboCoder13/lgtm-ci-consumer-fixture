@@ -10,7 +10,9 @@ name: fixture-verify-negative-probe
   workflow_dispatch:
     inputs:
       keep-negative-run:
-        description: Keep the verify-negative run after a passing probe (default deletes it)
+        description: >-
+          Keep the verify-negative run after a passing probe (default deletes
+          it)
         type: boolean
         default: false
 

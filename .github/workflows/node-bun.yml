@@ -40,7 +40,8 @@ jobs:
         ls ../.lgtm-ci-tooling/.github/actions >/dev/null &&
         ls ../.lgtm-ci-tooling/scripts/ci >/dev/null &&
         echo "tooling checkout present" &&
-        test -z "$(git -C .. status --porcelain -- node/bun.lock node/package-lock.json node/pnpm-lock.yaml)" &&
+        test -z "$(git -C .. status --porcelain -- node/bun.lock
+        node/package-lock.json node/pnpm-lock.yaml)" &&
         echo "lockfiles untouched"
       # Final assertion, after vitest ran through the selected manager: the
       # whole tree is clean, so no runner wrote another manager's lockfile or

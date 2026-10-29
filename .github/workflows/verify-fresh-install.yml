@@ -1,6 +1,7 @@
 # TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
 # Use audit until step-security/harden-runner#708 is fixed.
-# lgtm-ci external-consumer fixture — supply-chain POSITIVE probe (lgtm-ci #1096)
+# lgtm-ci external-consumer fixture — supply-chain POSITIVE probe (lgtm-ci
+# #1096)
 #
 # Dispatch-only. The `coverage` job of rust.yml normally finds cargo-nextest
 # already in the restored cargo cache and skips the download, so it never

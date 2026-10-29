@@ -71,6 +71,7 @@ jobs:
             --jq '.artifacts[].name' | tee names.txt
           dupes="$(sort names.txt | uniq -d)"
           if [ -n "$dupes" ]; then
-            echo "::error::duplicate artifact names across sibling calls: $dupes"
+            echo "::error::duplicate artifact names across sibling calls:" \
+              "$dupes"
             exit 1
           fi
