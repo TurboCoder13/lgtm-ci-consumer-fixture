@@ -1,8 +1,8 @@
 # TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
 # Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — shared probe for the negative-by-design
-# workflows (lgtm-ci #1083). Called only by the three `*-negative-probe.yml`
-# workflows; no lgtm-ci reference, so nothing to re-pin.
+# workflows (lgtm-ci #1083). Called by the negative-probe workflows;
+# no lgtm-ci reference, so nothing to re-pin.
 #
 # A job that calls a reusable workflow cannot take `continue-on-error`, and a
 # parse-time rejection (`startup_failure`) cannot be caught inside the run at
