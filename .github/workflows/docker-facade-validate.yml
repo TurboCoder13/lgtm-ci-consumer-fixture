@@ -55,6 +55,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.facade.result }}
+        shell: bash
         run: |
           echo "facade: result=$RESULT"
           test "$RESULT" = success
@@ -62,10 +63,25 @@ jobs:
           # Only this workflow's own uploads count (docker-scan-failure.yml
           # uploads the same categories on the same ref).
           key=".github/workflows/docker-facade-validate.yml:upload-scan-results"
-          analyses="$(gh api -X GET "$api" \
-            -f ref="$GITHUB_REF" -f per_page=100 \
-            --jq ".[] | select(.analysis_key == \"$key\") | .category")"
-          echo "$analyses"
-          for slug in linux-amd64 linux-arm64; do
-            grep -qx "trivy-$slug" <<<"$analyses"
+          for attempt in {1..9}; do
+            analyses="$(gh api -X GET "$api" \
+              -f ref="$GITHUB_REF" -f per_page=100 2>/dev/null |
+              jq -r --arg key "$key" --arg sha "$GITHUB_SHA" '
+                .[] | select(.analysis_key == $key and .commit_sha == $sha)
+                | .category' 2>/dev/null)" || {
+              analyses=""
+              echo "attempt $attempt: analyses lookup failed"
+            }
+            if grep -qx "trivy-linux-amd64" <<<"$analyses" &&
+              grep -qx "trivy-linux-arm64" <<<"$analyses"; then
+              echo "$analyses"
+              exit 0
+            fi
+            if [ "$attempt" -lt 9 ]; then
+              sleep 10
+            fi
           done
+          echo "Categories seen:"
+          echo "$analyses"
+          echo "::error::Missing SARIF categories after 9 attempts"
+          exit 1
