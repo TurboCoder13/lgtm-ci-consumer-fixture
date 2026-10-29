@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # SPDX-License-Identifier: MIT
 # Starter CI for a Python (uv/pytest) repository using lgtm-ci reusables.
 # Copy into your repository as .github/workflows/ci.yml.
@@ -33,7 +31,7 @@ jobs:
     with:
       job-name: "🛠️ Lintro Code Quality"
       working-directory: python
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       egress-preset: quality
 
   publish-quality-summary:
@@ -49,7 +47,7 @@ jobs:
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       exit-code: ${{ needs.quality.outputs.exit-code }}
 
   test:
@@ -77,5 +75,5 @@ jobs:
       upload-coverage: true
       publish-test-summary: true
       runner-image: ubuntu-24.04
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       egress-preset: pypi

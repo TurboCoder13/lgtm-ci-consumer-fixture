@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — private git dependency probe (#1021)
 # `python-private-dep/` declares a git dependency on a PRIVATE sibling repo
 # (TurboCoder13/trader-service) in dependency group `engine`, which this job
@@ -27,7 +25,7 @@ jobs:
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Python Tests (private dep, no secret)"
       python-version: "3.12"
       working-directory: python-private-dep
