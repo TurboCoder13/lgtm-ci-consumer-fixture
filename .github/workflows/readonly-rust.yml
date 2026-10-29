@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — read-only Rust variant (lgtm-ci #1081)
 # Calls the generated read-only variant reusable-rust-test-run.yml granting
 # only read scopes: no pull-requests: write. GitHub validates the called
@@ -27,7 +25,7 @@ jobs:
       actions: read
       contents: read
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Rust Tests (read-only)"
       rust-toolchain: stable
       working-directory: rust

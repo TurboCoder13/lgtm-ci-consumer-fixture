@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — Docker multi-platform facade, validate
 # path (lgtm-ci #1081). Calls the facade reusable-docker-multiplatform.yml
 # with push: false: it delegates to the read-only validate reusable, then its
@@ -30,7 +28,7 @@ jobs:
       packages: write
       security-events: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       matrix: >-
         [{"platform":"linux/amd64","slug":"linux-amd64",
         "runner":"ubuntu-24.04","qemu":false},

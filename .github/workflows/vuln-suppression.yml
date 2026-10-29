@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — osv-scanner install path
 # (reusable-vuln-suppression-check). Calls lgtm-hq/lgtm-ci at an exact SHA with
 # NO tooling-ref, from outside the lgtm-hq org. Re-pin with: scripts/pin.sh
@@ -7,9 +5,7 @@
 #
 # The fixture ships no .osv-scanner.toml, so the suppression check itself is a
 # no-op; the job exists to prove the digest-verified osv-scanner install
-# (lgtm-ci #1096) stays green on a plain ubuntu runner. The normal check uses
-# audit temporarily; check-block preserves block-mode coverage when enabled.
-# Set EGRESS_BLOCK_PROBES_ENABLED=true after harden-runner#708 is fixed.
+# (lgtm-ci #1096) stays green on a plain ubuntu runner under block-mode egress.
 ---
 name: fixture-vuln-suppression
 
@@ -28,7 +24,7 @@ jobs:
       contents: write
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Vulnerability Suppression Check"
       runner-image: ubuntu-24.04
       # Per ref: every lgtm-ci canary dispatches this on its own canary/<sha>
@@ -37,22 +33,5 @@ jobs:
       # #1134). This fixture has no .osv-scanner.toml, so runs never open
       # cleanup PRs that the per-repository group would serialize.
       concurrency-scope: ${{ github.ref }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  check-block:
-    if: vars.EGRESS_BLOCK_PROBES_ENABLED == 'true'
-    # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-vuln-suppression-check.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
-    permissions:
-      contents: write
-      pull-requests: write
-    with:
-      egress-policy: block
-      timeout-minutes: 8
-      job-name: "Vulnerability Suppression Check (block probe)"
-      runner-image: ubuntu-24.04
-      # This optional check and the audit check cannot supersede one another.
-      concurrency-scope: block-${{ github.ref }}
     secrets:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

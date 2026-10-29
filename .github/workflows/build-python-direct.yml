@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — direct build-python-package path (#1087)
 # A DEFAULT actions/checkout (shallow, depth 1, credentials kept) followed by
 # `uses: lgtm-hq/lgtm-ci/.github/actions/build-python-package@<sha>` with

@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — NEGATIVE permission test for the Node
 # facade (lgtm-ci #1081). Grants exactly what readonly.yml grants the
 # read-only variant (actions: read, contents: read) but calls the facade
@@ -26,7 +24,7 @@ jobs:
       actions: read
       contents: read
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Node Tests (facade, no pull-requests: write)"
       node-version: "22"
       working-directory: node
