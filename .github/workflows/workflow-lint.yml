@@ -22,7 +22,7 @@ concurrency:
 jobs:
   actionlint:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-quality-lint.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-quality-lint.yml@c5852140284b3ead3492665b1c821747ac4e60c6  # v0.78.1
     permissions:
       contents: read
       packages: read
