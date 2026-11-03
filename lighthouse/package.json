@@ -4,7 +4,7 @@
   "private": true,
   "description": "Minimal project carrying @lhci/cli for lgtm-ci run-lighthouse verification (#1077)",
   "devDependencies": {
-    "@lhci/cli": "^0.15.1"
+    "@lhci/cli": "^0.16.0"
   },
   "overrides": {
     "basic-ftp": "^6.2.1",
