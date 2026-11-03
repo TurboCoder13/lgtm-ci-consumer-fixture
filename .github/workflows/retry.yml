@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — single-call target for job re-runs
 # (lgtm-ci #803, #717). A workflow cannot re-run its own jobs from inside, so
 # convergence is verified from outside with `gh run rerun <run-id> --job <id>`
@@ -20,13 +18,13 @@ permissions: {}
 jobs:
   test:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
     permissions:
       actions: read
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Python Tests (retry)"
       python-version: "3.12"
       working-directory: python

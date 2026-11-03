@@ -1,5 +1,3 @@
-# TEMP: https://github.com/lgtm-hq/lgtm-ci/issues/1207
-# Use audit until step-security/harden-runner#708 is fixed.
 # lgtm-ci external-consumer fixture — results contract (lgtm-ci #1080)
 # Every runner leg must expose a results/**/results.json artifact that
 # validates against schemas/results.v1.json. Baseline-impossible on lgtm-ci
@@ -22,13 +20,13 @@ permissions: {}
 jobs:
   python:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
     permissions:
       actions: read
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Python Tests (contract)"
       python-version: "3.12"
       working-directory: python
@@ -40,13 +38,13 @@ jobs:
 
   python-compat:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-python.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
     permissions:
       actions: read
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Python Compat (contract)"
       python-versions: "3.12,3.13"
       working-directory: python
@@ -57,13 +55,13 @@ jobs:
 
   node:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-node.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
     permissions:
       actions: read
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Node Tests (contract)"
       node-version: "22"
       working-directory: node
@@ -75,13 +73,13 @@ jobs:
 
   rust:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
     permissions:
       actions: read
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Rust Tests (contract)"
       rust-toolchain: stable
       working-directory: rust
@@ -92,12 +90,12 @@ jobs:
 
   playwright:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
     permissions:
       contents: read
       pull-requests: write
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Playwright E2E (contract)"
       working-directory: playwright
       package-manager: bun
@@ -117,11 +115,11 @@ jobs:
     # The required-check reusable reads the documents too (lgtm-ci #1080).
     needs: [python, python-compat, node, rust]
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-required-check.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-required-check.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
     permissions:
       contents: read
     with:
-      egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+      egress-policy: block
       job-name: "Results gate"
       upstream-result: ${{ needs.python.result }}
       passed-output: ${{ needs.python.outputs.passed }}
@@ -138,11 +136,11 @@ jobs:
       actions: read
     steps:
       - name: Harden runner
-        # v2.22.2
+        # v2.22.3
         uses: >-
-          step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2
+          step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43
         with:
-          egress-policy: audit  # TEMP: lgtm-hq/lgtm-ci#1207
+          egress-policy: block
           allowed-endpoints: >
             github.com:443
             api.github.com:443
@@ -155,8 +153,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: lgtm-hq/lgtm-ci
-          # v0.78.1
-          ref: 2097a900753e3e5ad0e336483501b278e99855ae  # lgtm-ci-pin
+          # v0.79.2
+          ref: 8f0fd9339df5d30a529aa572ceb51345b8be33a0  # lgtm-ci-pin
           path: .lgtm-ci-tooling
           sparse-checkout: |
             schemas/
