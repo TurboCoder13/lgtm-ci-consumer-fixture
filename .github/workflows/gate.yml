@@ -1,0 +1,35 @@
+# lgtm-ci external-consumer fixture — all-checks gate (lgtm-hq/lgtm-ci#1375)
+# Calls reusable-all-checks-gate.yml from outside the lgtm-hq org with the
+# documented caller shape: pull_request + merge_group (no push), no secrets
+# (the gate runs on the read-only GITHUB_TOKEN), its own workflow file.
+# It has no workflow_dispatch on purpose: the gate judges the checks of a pull
+# request head, so it is proven by the pull_request run, not by a canary
+# dispatch. Calls lgtm-hq/lgtm-ci at an exact SHA with NO tooling-ref.
+# Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-gate
+
+"on":
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group:
+
+permissions: {}
+
+concurrency:
+  group: fixture-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-all-checks-gate.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      statuses: read
+    with:
+      egress-policy: block
+      runner-image: ubuntu-24.04
