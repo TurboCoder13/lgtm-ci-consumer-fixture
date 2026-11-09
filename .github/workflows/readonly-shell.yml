@@ -66,6 +66,6 @@ jobs:
     with:
       egress-policy: block
       job-name: "Shell Tests (read-only) required"
-      upstream-result: ${{ needs.shell.result }}
+      upstream-result: ${{ needs.shell.result == 'success' && needs.shell.outputs.passed == 'true' && 'success' || 'failure' }}
       passed-output: ${{ needs.shell.outputs.passed }}
       runner-image: ubuntu-24.04
