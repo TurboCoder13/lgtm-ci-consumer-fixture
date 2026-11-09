@@ -26,7 +26,7 @@ concurrency:
 jobs:
   publish:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@89a1c07e03e8f66f9e601d644536bcd59f932aa0  # v0.79.2
     permissions:
       attestations: write
       contents: read
