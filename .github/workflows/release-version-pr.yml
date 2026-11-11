@@ -31,7 +31,7 @@ concurrency:
 jobs:
   version-pr:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-version-pr.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-version-pr.yml@9f8a735ccaf2f2c9bc1d083397f2fbfad83ade82  # v0.78.1
     permissions:
       contents: write
       pull-requests: write
