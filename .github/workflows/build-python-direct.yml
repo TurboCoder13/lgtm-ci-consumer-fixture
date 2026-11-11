@@ -60,7 +60,7 @@ jobs:
       - name: build-python-package (direct)
         id: build
         # yamllint disable-line rule:line-length
-        uses: lgtm-hq/lgtm-ci/.github/actions/build-python-package@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+        uses: lgtm-hq/lgtm-ci/.github/actions/build-python-package@816de897ae62d449baee84f3ec5d505dc16e6fbe  # v0.78.1
         with:
           working-directory: python
           verify-tag-version: "false"
