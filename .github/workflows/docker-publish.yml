@@ -26,7 +26,7 @@ concurrency:
 jobs:
   publish:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@3e2587599421604a2cbf4e7e18ad022ca30e29e9  # v0.79.2
     permissions:
       # upload-sarif reads the workflow run (lgtm-hq/lgtm-ci#1310)
       actions: read
