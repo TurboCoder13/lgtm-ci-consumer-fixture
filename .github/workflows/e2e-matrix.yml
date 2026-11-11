@@ -1,0 +1,34 @@
+---
+# Multi-shard caller of reusable-test-e2e-matrix (lgtm-hq/lgtm-ci#1446).
+# Both shard legs must start: a scalar key in the generated matrix stops
+# every leg. matrix-a.spec.js and matrix-b.spec.js carry one @smoke test
+# each, and Playwright splits shards by file, so each shard has work.
+name: fixture-e2e-matrix
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  e2e-matrix:
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-matrix.yml@0f913b0a2d87a8295e4e4ff6b4d77ded39647748  # v0.93.2
+    permissions:
+      contents: read
+    with:
+      egress-policy: block
+      # The default `playwright` preset does not carry the host that Bun's
+      # GitHub release download redirects to, so Setup Bun fails under
+      # `block` on a cold cache. Append it until the preset does.
+      allowed-endpoints-mode: append
+      allowed-endpoints: release-assets.githubusercontent.com:443
+      working-directory: playwright
+      package-manager: bun
+      node-version: "22"
+      test-suites: smoke
+      browsers: chromium
+      shards: 2
+      upload-report: true
+      runner-image: ubuntu-24.04
