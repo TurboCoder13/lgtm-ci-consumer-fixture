@@ -14,7 +14,7 @@ permissions: {}
 
 jobs:
   e2e-matrix:
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-matrix.yml@0f913b0a2d87a8295e4e4ff6b4d77ded39647748  # v0.93.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-matrix.yml@ff33d0889f1b17fe548dc68058e898d369382dd1  # v0.93.2
     permissions:
       contents: read
     with:
