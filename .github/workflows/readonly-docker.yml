@@ -22,7 +22,7 @@ permissions: {}
 jobs:
   validate:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform-validate.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0  # v0.79.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform-validate.yml@0ee8ea9e6c8e9d7d7a740eafe2892286f69a96b7  # v0.79.2
     permissions:
       contents: read
     with:
