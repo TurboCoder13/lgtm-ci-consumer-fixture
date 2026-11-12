@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   rust-fresh-install:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-rust-test.yml@99740452768425f5ecda0a7d090c14a89f1b03cf  # v0.78.1
     permissions:
       actions: read
       contents: read
