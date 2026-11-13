@@ -46,17 +46,34 @@ jobs:
     permissions:
       actions: read
     steps:
+      # Only the validate job's result. A failed validate job is reported, not
+      # re-asserted: this step fails with only an exit code. lgtm-hq/lgtm-ci's
+      # external canary names this step (CANARY_INFRA_DOWNSTREAM_STEPS in
+      # scripts/ci/canary/runs.sh) as a downstream report it may excuse after
+      # an infrastructure failure, so keep its name, and keep product
+      # assertions out of it (lgtm-hq/lgtm-ci#1505).
       - name: Assert the build passed and both SARIF artifacts exist
         env:
-          GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.validate.result }}
         run: |
           echo "validate: result=$RESULT"
           test "$RESULT" = success
+      # Product assertions: each failure annotates its own message, and the
+      # canary never excuses this step.
+      - name: Check both SARIF artifacts exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
           run_url="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          names="$(gh api -X GET "$run_url/artifacts" \
-            --jq '.artifacts[].name')"
+          if ! names="$(gh api -X GET "$run_url/artifacts" \
+            --jq '.artifacts[].name')"; then
+            echo "::error title=readonly-docker::cannot list this run's artifacts"
+            exit 1
+          fi
           echo "$names"
           for slug in linux-amd64 linux-arm64; do
-            grep -qx "docker-trivy-sarif-$slug" <<<"$names"
+            if ! grep -qx "docker-trivy-sarif-$slug" <<<"$names"; then
+              echo "::error title=readonly-docker::artifact docker-trivy-sarif-$slug is missing"
+              exit 1
+            fi
           done
