@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   facade:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-docker-multiplatform.yml@8ad9543822dbb8b3a85bcd25f2651a7c7f3320b5  # v0.78.1
     permissions:
       # upload-sarif reads the workflow run (lgtm-hq/lgtm-ci#1310)
       actions: read
