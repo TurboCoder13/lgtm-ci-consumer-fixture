@@ -51,21 +51,38 @@ jobs:
     permissions:
       security-events: read
     steps:
+      # Only the facade job's result. A failed facade job is reported, not
+      # re-asserted: this step fails with only an exit code. lgtm-hq/lgtm-ci's
+      # external canary names this step (CANARY_INFRA_DOWNSTREAM_STEPS in
+      # scripts/ci/canary/runs.sh) as a downstream report it may excuse after
+      # an infrastructure failure, so keep its name, and keep product
+      # assertions out of it (lgtm-hq/lgtm-ci#1505).
       - name: Assert the facade validated and uploaded both SARIF categories
         env:
-          GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.facade.result }}
         run: |
           echo "facade: result=$RESULT"
           test "$RESULT" = success
+      # Product assertions: each failure annotates its own message, and the
+      # canary never excuses this step.
+      - name: Check the facade uploaded both SARIF categories
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
           api="repos/$GITHUB_REPOSITORY/code-scanning/analyses"
           # Only this workflow's own uploads count (docker-scan-failure.yml
           # uploads the same categories on the same ref).
           key=".github/workflows/docker-facade-validate.yml:upload-scan-results"
-          analyses="$(gh api -X GET "$api" \
+          if ! analyses="$(gh api -X GET "$api" \
             -f ref="$GITHUB_REF" -f per_page=100 \
-            --jq ".[] | select(.analysis_key == \"$key\") | .category")"
+            --jq ".[] | select(.analysis_key == \"$key\") | .category")"; then
+            echo "::error title=docker-facade-validate::cannot list code-scanning analyses for $GITHUB_REF"
+            exit 1
+          fi
           echo "$analyses"
           for slug in linux-amd64 linux-arm64; do
-            grep -qx "trivy-$slug" <<<"$analyses"
+            if ! grep -qx "trivy-$slug" <<<"$analyses"; then
+              echo "::error title=docker-facade-validate::no code-scanning analysis in category trivy-$slug"
+              exit 1
+            fi
           done

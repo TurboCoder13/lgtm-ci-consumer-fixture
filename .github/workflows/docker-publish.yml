@@ -57,19 +57,44 @@ jobs:
     permissions:
       packages: read
     steps:
+      # Only the publish job's result. A failed publish job is reported, not
+      # re-asserted: this step fails with only an exit code. lgtm-hq/lgtm-ci's
+      # external canary names this step (CANARY_INFRA_DOWNSTREAM_STEPS in
+      # scripts/ci/canary/runs.sh) as a downstream report it may excuse after
+      # an infrastructure failure, so keep its name, and keep product
+      # assertions out of it (lgtm-hq/lgtm-ci#1505).
       - name: Assert the published index lists both platforms
         env:
           RESULT: ${{ needs.publish.result }}
+        run: |
+          echo "publish: result=$RESULT"
+          test "$RESULT" = success
+      # Product assertions: each failure annotates its own message, and the
+      # canary never excuses this step.
+      - name: Check the published index lists both platforms
+        env:
           DIGEST: ${{ needs.publish.outputs.digest }}
           GHCR_TOKEN: ${{ github.token }}
           IMAGE: ghcr.io/turbocoder13/lgtm-ci-consumer-fixture/fixture-image
         run: |
-          echo "publish: result=$RESULT digest=$DIGEST"
-          test "$RESULT" = success
-          [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
-          echo "$GHCR_TOKEN" |
-            docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          inspect="$(docker buildx imagetools inspect "$IMAGE@$DIGEST")"
+          echo "publish: digest=$DIGEST"
+          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error title=docker-publish::publish digest is not a sha256 digest: '$DIGEST'"
+            exit 1
+          fi
+          if ! echo "$GHCR_TOKEN" |
+            docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin; then
+            echo "::error title=docker-publish::docker login to ghcr.io failed"
+            exit 1
+          fi
+          if ! inspect="$(docker buildx imagetools inspect "$IMAGE@$DIGEST")"; then
+            echo "::error title=docker-publish::cannot inspect $IMAGE@$DIGEST"
+            exit 1
+          fi
           echo "$inspect"
-          grep -q "linux/amd64" <<<"$inspect"
-          grep -q "linux/arm64" <<<"$inspect"
+          for platform in linux/amd64 linux/arm64; do
+            if ! grep -q "$platform" <<<"$inspect"; then
+              echo "::error title=docker-publish::published index does not list $platform"
+              exit 1
+            fi
+          done
