@@ -14,16 +14,11 @@ permissions: {}
 
 jobs:
   e2e-matrix:
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-matrix.yml@0f913b0a2d87a8295e4e4ff6b4d77ded39647748  # v0.93.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-matrix.yml@f12dc295ee688273367d8db5a4a2dd29046e60a1  # v0.96.1
     permissions:
       contents: read
     with:
       egress-policy: block
-      # The default `playwright` preset does not carry the host that Bun's
-      # GitHub release download redirects to, so Setup Bun fails under
-      # `block` on a cold cache. Append it until the preset does.
-      allowed-endpoints-mode: append
-      allowed-endpoints: release-assets.githubusercontent.com:443
       working-directory: playwright
       package-manager: bun
       node-version: "22"
@@ -32,3 +27,51 @@ jobs:
       shards: 2
       upload-report: true
       runner-image: ubuntu-24.04
+
+  # The merged totals must be the sum of both shards, and each shard must
+  # have run a test (lgtm-hq/lgtm-ci#1474).
+  check:
+    needs: [e2e-matrix]
+    if: always()
+    runs-on: ubuntu-26.04
+    permissions: {}
+    steps:
+      # Only the e2e-matrix job's result: a failure there is reported, not
+      # re-asserted, so this step fails with only an exit code.
+      - name: Require the e2e-matrix job to succeed
+        env:
+          RESULT: ${{ needs.e2e-matrix.result }}
+        run: |
+          echo "e2e-matrix: result=$RESULT"
+          test "$RESULT" = success
+      # Product assertions: each failure annotates its own message.
+      - name: Check every shard ran and the totals sum the shards
+        env:
+          SHARD_COUNTS: ${{ needs.e2e-matrix.outputs.shard-counts }}
+          TOTAL_PASSED: ${{ needs.e2e-matrix.outputs.total-passed }}
+          TOTAL_FAILED: ${{ needs.e2e-matrix.outputs.total-failed }}
+        run: |
+          echo "shard-counts: $SHARD_COUNTS"
+          echo "total-passed=$TOTAL_PASSED total-failed=$TOTAL_FAILED"
+          fail() {
+            echo "::error title=e2e-matrix::$1"
+            exit 1
+          }
+          # Validate the whole shape first, so every later jq call succeeds.
+          shape='type == "array" and all(.[]; type == "object"
+            and ([.passed, .failed, .skipped]
+              | all(type == "number" and . >= 0 and . == floor)))'
+          jq -e "$shape" <<<"$SHARD_COUNTS" >/dev/null 2>&1 ||
+            fail "shard-counts is not an array of {passed, failed, skipped} counts: '$SHARD_COUNTS'"
+          shards="$(jq -r 'length' <<<"$SHARD_COUNTS")"
+          [[ "$shards" == 2 ]] || fail "expected 2 shard reports, got $shards"
+          empty="$(jq -r '[.[] | select(.passed + .failed + .skipped < 1)] | length' \
+            <<<"$SHARD_COUNTS")"
+          [[ "$empty" == 0 ]] || fail "$empty shard(s) ran no test"
+          passed="$(jq -r '[.[].passed] | add' <<<"$SHARD_COUNTS")"
+          failed="$(jq -r '[.[].failed] | add' <<<"$SHARD_COUNTS")"
+          [[ "$passed" == "$TOTAL_PASSED" ]] ||
+            fail "shards passed $passed but total-passed is '$TOTAL_PASSED'"
+          [[ "$failed" == "$TOTAL_FAILED" ]] ||
+            fail "shards failed $failed but total-failed is '$TOTAL_FAILED'"
+          [[ "$failed" == 0 ]] || fail "$failed test(s) failed"
