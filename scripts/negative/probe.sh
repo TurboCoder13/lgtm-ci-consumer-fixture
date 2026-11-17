@@ -41,6 +41,7 @@ PROBE_EVIDENCE="${PROBE_EVIDENCE:-negative-evidence.json}"
 #   conclusion <run conclusion>
 #   jobs <exact job count>
 #   job <job-name prefix> <job conclusion> [annotation title the job must raise]
+#   step <job-name prefix> <step name> <step conclusion, or "absent">
 # Fields are tab-separated.
 expectations() {
 	case "$1" in
@@ -71,6 +72,16 @@ expectations() {
 		# Both matrix legs match the prefix; their conclusions are joined.
 		printf 'job\tfacade / Validate / Docker build per platform\tfailure,failure\n'
 		printf 'job\tVerify SARIF reached code scanning\tsuccess\n'
+		;;
+	tooling-app-negative.yml)
+		# Half a tooling App credential (lgtm-ci #1622) must stop the job at
+		# the check step, before any mint or tooling checkout.
+		printf 'conclusion\tfailure\n'
+		printf 'job\tclient-id-only / NEGATIVE tooling App client ID only\tfailure\tincomplete tooling App credential\n'
+		printf 'step\tclient-id-only / NEGATIVE tooling App client ID only\tCheck tooling App credential\tfailure\n'
+		printf 'step\tclient-id-only / NEGATIVE tooling App client ID only\tMint tooling App token\tskipped\n'
+		printf 'step\tclient-id-only / NEGATIVE tooling App client ID only\tCheckout lgtm-ci tooling\tskipped\n'
+		printf 'step\tclient-id-only / NEGATIVE tooling App client ID only\tCheckout and harden\tskipped\n'
 		;;
 	*)
 		echo "::error::no expectations for '$1'" >&2
@@ -105,22 +116,25 @@ while :; do
 	sleep "$PROBE_POLL_SECONDS"
 done
 
-# Jobs with their annotations: [{name, conclusion, annotations: [{level, title, message}]}]
+# Jobs with their steps and annotations:
+# [{name, conclusion, steps: [{name, conclusion}], annotations: [{level, title, message}]}]
 # The listing is captured (not read from a process substitution) so a failed
 # lookup aborts the probe instead of reading as "no jobs", which would
 # satisfy the perms-negative expectation and delete the run.
-job_rows="$(gh api -X GET "repos/${GH_REPO}/actions/runs/${run_id}/jobs?per_page=100" \
-	--jq '.jobs[] | [.id, .name, (.conclusion // "")] | @tsv')" || {
+jobs_raw="$(gh api -X GET "repos/${GH_REPO}/actions/runs/${run_id}/jobs?per_page=100")" || {
 	echo "::error::cannot list the jobs of ${negative} run ${run_id}; kept for inspection" >&2
 	exit 1
 }
+job_rows="$(jq -r '.jobs[] | [.id, .name, (.conclusion // "")] | @tsv' <<<"$jobs_raw")"
 jobs_json="[]"
 while IFS=$'\t' read -r job_id job_name job_conclusion; do
 	[[ -n "$job_id" ]] || continue
 	annotations="$(gh api -X GET "repos/${GH_REPO}/check-runs/${job_id}/annotations?per_page=100" \
 		--jq '[.[] | {level: .annotation_level, title: (.title // ""), message}]')"
-	jobs_json="$(jq --arg n "$job_name" --arg c "$job_conclusion" --argjson a "$annotations" \
-		'. + [{name: $n, conclusion: $c, annotations: $a}]' <<<"$jobs_json")"
+	steps="$(jq -c --argjson id "$job_id" \
+		'[.jobs[] | select(.id == $id) | (.steps // [])[] | {name, conclusion: (.conclusion // "")}]' <<<"$jobs_raw")"
+	jobs_json="$(jq --arg n "$job_name" --arg c "$job_conclusion" --argjson a "$annotations" --argjson s "$steps" \
+		'. + [{name: $n, conclusion: $c, steps: $s, annotations: $a}]' <<<"$jobs_json")"
 done <<<"$job_rows"
 
 # Evaluate every expectation; collect a result row per check.
@@ -151,6 +165,11 @@ while IFS=$'\t' read -r kind a b c; do
 				got="${b}, no \`${c}\` annotation"
 			fi
 		fi
+		;;
+	step)
+		label="step \`${b}\` in \`${a}*\`"
+		want="$c"
+		got="$(jq -r --arg p "$a" --arg s "$b" '[.[] | select(.name | startswith($p)) | .steps[] | select(.name == $s) | .conclusion] | if length == 0 then "absent" else join(",") end' <<<"$jobs_json")"
 		;;
 	*)
 		continue

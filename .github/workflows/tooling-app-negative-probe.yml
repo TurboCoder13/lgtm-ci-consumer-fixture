@@ -1,0 +1,36 @@
+# lgtm-ci external-consumer fixture — probe for tooling-app-negative.yml
+# (lgtm-ci #1622). Dispatches tooling-app-negative.yml on this run's ref and
+# is green only when its called job failed at "Check tooling App credential"
+# with the `incomplete tooling App credential` annotation and skipped the mint
+# and the tooling checkout (see negative-probe.yml and
+# scripts/negative/probe.sh). The canary dispatches this probe; it never
+# dispatches tooling-app-negative.yml directly.
+---
+name: fixture-tooling-app-negative-probe
+
+"on":
+  workflow_dispatch:
+    inputs:
+      keep-negative-run:
+        description: >-
+          Keep the tooling-app-negative run after a passing probe (default
+          deletes it)
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: tooling-app-negative-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    uses: ./.github/workflows/negative-probe.yml
+    permissions:
+      actions: write
+      checks: read
+      contents: read
+    with:
+      negative: tooling-app-negative.yml
+      keep-negative-run: ${{ inputs.keep-negative-run || false }}
