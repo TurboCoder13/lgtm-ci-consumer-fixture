@@ -30,7 +30,6 @@ jobs:
       concurrency-scope: "a"
       build-script: scripts/rust-release/build-workspace.sh
       egress-policy: block
-      egress-preset: build-artifact
       allowed-endpoints-mode: append
       runner-image: ubuntu-24.04
 
@@ -44,6 +43,5 @@ jobs:
       concurrency-scope: "b"
       build-script: scripts/rust-release/build-workspace.sh
       egress-policy: block
-      egress-preset: build-artifact
       allowed-endpoints-mode: append
       runner-image: ubuntu-24.04
