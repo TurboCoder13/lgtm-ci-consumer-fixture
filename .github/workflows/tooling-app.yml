@@ -1,0 +1,251 @@
+# lgtm-ci external-consumer fixture — tooling App credential (lgtm-ci #1622)
+# Calls a converted lgtm-ci reusable, reusable-validate-action-pinning.yml,
+# from outside the lgtm-hq org, twice:
+#
+#   app-pair  forwards LGTM_CI_TOOLING_APP_CLIENT_ID and
+#             LGTM_CI_TOOLING_APP_PRIVATE_KEY. The job must run "Check tooling
+#             App credential", mint a token in "Mint tooling App token" (App
+#             lgtm-ci-tooling-reader: Contents read-only, installed on
+#             lgtm-hq/lgtm-ci only), check the tooling out with it and revoke
+#             it in the post step.
+#   no-app    forwards nothing. Both App steps are skipped and the tooling
+#             checkout falls back to github.token, as before #1622.
+#
+# The assert job reads both called jobs' steps through the jobs API and checks
+# each step's conclusion (scripts/tooling-app/assert-steps.sh), the absence of
+# the minting action's "Token revocation failed" warning, and the "Token
+# revoked" line in the app-pair job log. The post step also succeeds when it
+# skips revocation (no token, token expired, skip-token-revoke), so only that
+# line proves the DELETE /installation/token call. The log is fetched through
+# `GET /actions/jobs/{id}/logs`, which redirects to GitHub's results storage,
+# hence the explicit productionresultssa<N> hosts in the assert allow-list; the
+# log is grepped for that one marker and never printed.
+#
+# The one-secret case is tooling-app-negative.yml, dispatched by
+# tooling-app-negative-probe.yml. The mint-skipped-because-no-consumer case
+# (LGTM_CI_TOOLING_APP_NEEDED false) cannot run here: no converted reusable
+# sets it false on a dispatch (the pilot only on merge_group, and this
+# repository has no merge queue; reusable-test-python.yml only on
+# pull_request with pipeline-skip).
+#
+# The validation itself is not under test: fail-on-error and verify-tags are
+# off so the called job's result depends on the tooling path only.
+# workflow_dispatch only; no secret is printed. Calls lgtm-hq/lgtm-ci at an
+# exact SHA with NO tooling-ref.
+# Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-tooling-app
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  app-pair:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-validate-action-pinning.yml@3d2d9d665e39171da6ac3ca26518686525507257  # v0.109.0
+    permissions:
+      contents: read
+    with:
+      job-name: "Tooling App pair"
+      fail-on-error: false
+      verify-tags: false
+      egress-policy: block
+    secrets:
+      # yamllint disable-line rule:line-length
+      LGTM_CI_TOOLING_APP_CLIENT_ID: ${{ secrets.LGTM_CI_TOOLING_APP_CLIENT_ID }}
+      # yamllint disable-line rule:line-length
+      LGTM_CI_TOOLING_APP_PRIVATE_KEY: ${{ secrets.LGTM_CI_TOOLING_APP_PRIVATE_KEY }}
+
+  no-app:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-validate-action-pinning.yml@3d2d9d665e39171da6ac3ca26518686525507257  # v0.109.0
+    permissions:
+      contents: read
+    with:
+      job-name: "No tooling App"
+      fail-on-error: false
+      verify-tags: false
+      egress-policy: block
+
+  assert:
+    name: Assert tooling App steps
+    needs: [app-pair, no-app]
+    # Judge the step evidence even when a called job failed.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      # List this run's jobs and their steps; read the app-pair job log.
+      actions: read
+      # Read the app-pair job's annotations (check-run annotations API).
+      checks: read
+      # Check out scripts/tooling-app/assert-steps.sh.
+      contents: read
+    steps:
+      - name: Harden runner
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43  # v2.22.3
+        with:
+          egress-policy: block
+          # GitHub results storage (logs, artifacts, cache): exact hosts,
+          # never *.blob.core.windows.net (anyone can register one). Same
+          # set as lgtm-ci scripts/ci/lib/egress/presets.sh
+          # egress_github_results_storage_endpoints.
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            productionresultssa0.blob.core.windows.net:443
+            productionresultssa1.blob.core.windows.net:443
+            productionresultssa2.blob.core.windows.net:443
+            productionresultssa3.blob.core.windows.net:443
+            productionresultssa4.blob.core.windows.net:443
+            productionresultssa5.blob.core.windows.net:443
+            productionresultssa6.blob.core.windows.net:443
+            productionresultssa7.blob.core.windows.net:443
+            productionresultssa8.blob.core.windows.net:443
+            productionresultssa9.blob.core.windows.net:443
+            productionresultssa10.blob.core.windows.net:443
+            productionresultssa11.blob.core.windows.net:443
+            productionresultssa12.blob.core.windows.net:443
+            productionresultssa13.blob.core.windows.net:443
+            productionresultssa14.blob.core.windows.net:443
+            productionresultssa15.blob.core.windows.net:443
+            productionresultssa16.blob.core.windows.net:443
+            productionresultssa17.blob.core.windows.net:443
+            productionresultssa18.blob.core.windows.net:443
+            productionresultssa19.blob.core.windows.net:443
+            productionresultssa30.blob.core.windows.net:443
+            productionresultssa31.blob.core.windows.net:443
+            productionresultssa32.blob.core.windows.net:443
+            productionresultssa33.blob.core.windows.net:443
+            productionresultssa34.blob.core.windows.net:443
+            productionresultssa35.blob.core.windows.net:443
+            productionresultssa36.blob.core.windows.net:443
+            productionresultssa37.blob.core.windows.net:443
+            productionresultssa38.blob.core.windows.net:443
+            productionresultssa39.blob.core.windows.net:443
+            productionresultssa40.blob.core.windows.net:443
+            productionresultssa41.blob.core.windows.net:443
+            productionresultssa42.blob.core.windows.net:443
+            productionresultssa43.blob.core.windows.net:443
+            productionresultssa44.blob.core.windows.net:443
+            productionresultssa45.blob.core.windows.net:443
+            productionresultssa46.blob.core.windows.net:443
+            productionresultssa47.blob.core.windows.net:443
+            productionresultssa48.blob.core.windows.net:443
+            productionresultssa49.blob.core.windows.net:443
+            productionresultssa100.blob.core.windows.net:443
+            productionresultssa101.blob.core.windows.net:443
+            productionresultssa102.blob.core.windows.net:443
+            productionresultssa103.blob.core.windows.net:443
+            productionresultssa104.blob.core.windows.net:443
+            productionresultssa105.blob.core.windows.net:443
+            productionresultssa106.blob.core.windows.net:443
+            productionresultssa107.blob.core.windows.net:443
+            productionresultssa108.blob.core.windows.net:443
+            productionresultssa109.blob.core.windows.net:443
+            productionresultssa110.blob.core.windows.net:443
+            productionresultssa111.blob.core.windows.net:443
+            productionresultssa112.blob.core.windows.net:443
+            productionresultssa113.blob.core.windows.net:443
+            productionresultssa114.blob.core.windows.net:443
+            productionresultssa115.blob.core.windows.net:443
+            productionresultssa116.blob.core.windows.net:443
+            productionresultssa117.blob.core.windows.net:443
+            productionresultssa118.blob.core.windows.net:443
+            productionresultssa119.blob.core.windows.net:443
+            productionresultssa120.blob.core.windows.net:443
+            productionresultssa121.blob.core.windows.net:443
+            productionresultssa122.blob.core.windows.net:443
+            productionresultssa123.blob.core.windows.net:443
+            productionresultssa124.blob.core.windows.net:443
+            productionresultssa125.blob.core.windows.net:443
+            productionresultssa126.blob.core.windows.net:443
+            productionresultssa127.blob.core.windows.net:443
+            productionresultssa128.blob.core.windows.net:443
+            productionresultssa129.blob.core.windows.net:443
+            productionresultssa130.blob.core.windows.net:443
+            productionresultssa131.blob.core.windows.net:443
+            productionresultssa132.blob.core.windows.net:443
+            productionresultssa133.blob.core.windows.net:443
+            productionresultssa134.blob.core.windows.net:443
+            productionresultssa135.blob.core.windows.net:443
+            productionresultssa136.blob.core.windows.net:443
+            productionresultssa137.blob.core.windows.net:443
+            productionresultssa138.blob.core.windows.net:443
+            productionresultssa139.blob.core.windows.net:443
+            productionresultssa140.blob.core.windows.net:443
+            productionresultssa141.blob.core.windows.net:443
+            productionresultssa142.blob.core.windows.net:443
+            productionresultssa143.blob.core.windows.net:443
+            productionresultssa144.blob.core.windows.net:443
+            productionresultssa145.blob.core.windows.net:443
+            productionresultssa146.blob.core.windows.net:443
+            productionresultssa147.blob.core.windows.net:443
+            productionresultssa148.blob.core.windows.net:443
+            productionresultssa149.blob.core.windows.net:443
+            productionresultssa150.blob.core.windows.net:443
+            productionresultssa151.blob.core.windows.net:443
+            productionresultssa152.blob.core.windows.net:443
+            productionresultssa153.blob.core.windows.net:443
+            productionresultssa154.blob.core.windows.net:443
+            productionresultssa155.blob.core.windows.net:443
+            productionresultssa156.blob.core.windows.net:443
+            productionresultssa157.blob.core.windows.net:443
+            productionresultssa158.blob.core.windows.net:443
+            productionresultssa159.blob.core.windows.net:443
+            productionresultssa160.blob.core.windows.net:443
+            productionresultssa161.blob.core.windows.net:443
+            productionresultssa162.blob.core.windows.net:443
+            productionresultssa163.blob.core.windows.net:443
+            productionresultssa164.blob.core.windows.net:443
+            productionresultssa165.blob.core.windows.net:443
+            productionresultssa166.blob.core.windows.net:443
+            productionresultssa167.blob.core.windows.net:443
+            productionresultssa168.blob.core.windows.net:443
+            productionresultssa169.blob.core.windows.net:443
+            productionresultssa170.blob.core.windows.net:443
+            productionresultssa171.blob.core.windows.net:443
+            productionresultssa172.blob.core.windows.net:443
+            productionresultssa173.blob.core.windows.net:443
+            productionresultssa174.blob.core.windows.net:443
+            productionresultssa175.blob.core.windows.net:443
+            productionresultssa176.blob.core.windows.net:443
+            productionresultssa177.blob.core.windows.net:443
+            productionresultssa178.blob.core.windows.net:443
+            productionresultssa179.blob.core.windows.net:443
+            productionresultssa180.blob.core.windows.net:443
+            productionresultssa181.blob.core.windows.net:443
+            productionresultssa182.blob.core.windows.net:443
+            productionresultssa183.blob.core.windows.net:443
+            productionresultssa184.blob.core.windows.net:443
+            productionresultssa185.blob.core.windows.net:443
+            productionresultssa186.blob.core.windows.net:443
+            productionresultssa187.blob.core.windows.net:443
+            productionresultssa188.blob.core.windows.net:443
+            productionresultssa189.blob.core.windows.net:443
+            productionresultssa190.blob.core.windows.net:443
+            productionresultssa191.blob.core.windows.net:443
+            productionresultssa192.blob.core.windows.net:443
+            productionresultssa193.blob.core.windows.net:443
+            productionresultssa194.blob.core.windows.net:443
+            productionresultssa195.blob.core.windows.net:443
+            productionresultssa196.blob.core.windows.net:443
+            productionresultssa197.blob.core.windows.net:443
+            productionresultssa198.blob.core.windows.net:443
+            productionresultssa199.blob.core.windows.net:443
+      - name: Checkout assertion script
+        # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          sparse-checkout: scripts/tooling-app
+          persist-credentials: false
+      - name: Assert step conclusions of the called jobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: bash scripts/tooling-app/assert-steps.sh

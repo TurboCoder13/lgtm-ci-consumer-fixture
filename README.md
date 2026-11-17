@@ -48,6 +48,9 @@ reference. Tracked by lgtm-hq/lgtm-ci#1074.
 | `playwright-negative.yml`                                                                | dispatch only (by its probe) | **Negative-by-design:** project `chromium-failing` always fails; the verdict is `verify-report`, which asserts the failure-path artifact contains `index.html`. Baseline: artifact held only `playwright-results.json`; since #1104 the HTML report is present                                                                                                                                                                                                                            |
 | `verify-negative.yml`                                                                    | dispatch only (by its probe) | **Negative-by-design:** wrong committed digests for cargo-nextest and osv-scanner injected through the reusables' caller-script inputs; both jobs must be refused with a `digest mismatch` annotation (#1096)                                                                                                                                                                                                                                                                             |
 | `perms-negative-probe.yml`, `playwright-negative-probe.yml`, `verify-negative-probe.yml` | dispatch only                | Dispatch their negative on the same ref and assert it failed **as designed**; green when it did, red when it passed or failed for another reason. See [Negative probes](#negative-probes)                                                                                                                                                                                                                                                                                                 |
+| `tooling-app.yml`                                                                        | dispatch only                | Tooling App credential (lgtm-ci #1622) on the converted `reusable-validate-action-pinning.yml`: with both App secrets the job mints, checks the tooling out and revokes in the post step; with none both App steps skip and the checkout uses `github.token`. The `assert` job checks every step's conclusion through the jobs API and the `Token revoked` line in the app-pair job log. See [Tooling App credential](#tooling-app-credential)                                            |
+| `tooling-app-negative.yml`                                                               | dispatch only (by its probe) | **Negative:** only `LGTM_CI_TOOLING_APP_CLIENT_ID` forwarded; the job must fail at `Check tooling App credential` with `incomplete tooling App credential`, mint and tooling checkout skipped (lgtm-ci #1622)                                                                                                                                                                                                                                                                             |
+| `tooling-app-negative-probe.yml`                                                         | dispatch only                | Dispatches `tooling-app-negative.yml` and asserts it failed at that step (see [Negative probes](#negative-probes))                                                                                                                                                                                                                                                                                                                                                                        |
 
 ## Pinning to a candidate
 
@@ -69,18 +72,18 @@ A negative-by-design run is red on the Actions page even when it proves what it
 should. It cannot be turned green from inside: a job that calls a reusable
 workflow does not accept `continue-on-error`, so a failed call fails the run,
 and `perms-negative.yml` is rejected at parse time (`startup_failure`), before
-any job of its own could look at the result. The four negatives in the table
+any job of its own could look at the result. The five negatives in the table
 below have a probe, `<name>-probe.yml`, which calls the shared
-`negative-probe.yml`:
-`scripts/negative/probe.sh` dispatches the negative on the probe's ref (the
-dispatch API returns the run id), waits for it, and checks:
+`negative-probe.yml`: `scripts/negative/probe.sh` dispatches the negative on the
+probe's ref (the dispatch API returns the run id), waits for it, and checks:
 
-| Negative                  | Run conclusion    | Job evidence                                                                                  |
-| ------------------------- | ----------------- | --------------------------------------------------------------------------------------------- |
-| `perms-negative.yml`      | `startup_failure` | zero jobs created                                                                             |
-| `playwright-negative.yml` | `failure`         | `e2e-failing / Playwright E2E …` failed; `Verify failure-path HTML report artifact` succeeded |
-| `verify-negative.yml`     | `failure`         | both `NEGATIVE … wrong digest` jobs failed **and** raised the `digest mismatch` annotation    |
-| `docker-scan-failure.yml` | `failure`         | both per-platform Docker builds failed; `Verify SARIF reached code scanning` succeeded        |
+| Negative                   | Run conclusion    | Job evidence                                                                                                                                                                                                                                 |
+| -------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `perms-negative.yml`       | `startup_failure` | zero jobs created                                                                                                                                                                                                                            |
+| `playwright-negative.yml`  | `failure`         | `e2e-failing / Playwright E2E …` failed; `Verify failure-path HTML report artifact` succeeded                                                                                                                                                |
+| `verify-negative.yml`      | `failure`         | both `NEGATIVE … wrong digest` jobs failed **and** raised the `digest mismatch` annotation                                                                                                                                                   |
+| `docker-scan-failure.yml`  | `failure`         | both per-platform Docker builds failed; `Verify SARIF reached code scanning` succeeded                                                                                                                                                       |
+| `tooling-app-negative.yml` | `failure`         | `client-id-only / NEGATIVE …` failed with the `incomplete tooling App credential` annotation; its step `Check tooling App credential` failed and `Mint tooling App token`, `Checkout lgtm-ci tooling` and `Checkout and harden` were skipped |
 
 The other permission negatives (`perms-negative-node.yml`,
 `perms-negative-shell.yml`, `perms-negative-rust.yml`,
@@ -109,6 +112,58 @@ First run (fixture branch `probe-test`, lgtm-ci `v0.76.0` `2134b700`,
 and `verify-negative-probe`
 [37836386618](https://github.com/TurboCoder13/lgtm-ci-consumer-fixture/actions/runs/37836386618)
 all green; each negative concluded as expected and its run was deleted.
+
+## Tooling App credential
+
+lgtm-ci #1622 lets a caller give the tooling checkout a GitHub App instead of a
+stored token. This repository holds the client ID and a private key of the App
+`lgtm-ci-tooling-reader` (owned by lgtm-hq, Contents: Read-only, installed on
+`lgtm-hq/lgtm-ci` only) as `LGTM_CI_TOOLING_APP_CLIENT_ID` and
+`LGTM_CI_TOOLING_APP_PRIVATE_KEY`.
+
+The workflows call `reusable-validate-action-pinning.yml`, which accepts the
+pair since v0.109.0 and runs cleanly on `workflow_dispatch`
+(`reusable-semantic-pr-title.yml`, the pilot, needs a pull request event and
+fails on a dispatch). Validation itself is not under test (`fail-on-error` and
+`verify-tags` off).
+
+| Case           | Workflow                                     | Expected                                                                                                                                                                                                                 |
+| -------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Both secrets   | `tooling-app.yml` job `app-pair`             | `Check tooling App credential`, `Mint tooling App token`, `Checkout lgtm-ci tooling`, `Checkout and harden`, `Post Mint tooling App token` succeed; no `Token revocation failed` warning; `Token revoked` in the job log |
+| No secret      | `tooling-app.yml` job `no-app`               | both App steps skipped, tooling checkout succeeds on `github.token`                                                                                                                                                      |
+| Client ID only | `tooling-app-negative.yml` through its probe | job fails at `Check tooling App credential` with `incomplete tooling App credential`                                                                                                                                     |
+
+`scripts/tooling-app/assert-steps.sh` (the `assert` job) checks the first two
+rows; `scripts/negative/probe.sh` checks the third.
+
+What a green run proves, for a caller outside lgtm-hq:
+
+- **Mint:** the reusable accepts the forwarded pair and mints an installation
+  token for `lgtm-hq/lgtm-ci` with Contents read (`Mint tooling App token`
+  succeeds).
+- **Use:** the tooling checkout runs with that token (`Checkout lgtm-ci tooling`
+  and `Checkout and harden` succeed). Without the pair it falls back to
+  `github.token`, as before #1622 (`no-app` job).
+- **Revocation:** the app-pair job log has the line `Token revoked`. The minting
+  action's post step concludes `success` also when it skips revocation
+  (`Token is not set`, token expired, `skip-token-revoke`), so the `assert` job
+  does not stop at the step conclusion: it fetches the job log through
+  `GET /actions/jobs/{id}/logs` (`actions: read`), greps it for that exact line
+  and never prints it. That endpoint redirects to GitHub's results storage, so
+  the `assert` job allows the explicit
+  `productionresultssa<N>.blob.core.windows.net` hosts copied from lgtm-ci's
+  egress presets, not a wildcard. If GitHub adds a storage shard, the log fetch
+  is blocked and the check reads `log unreadable`, a visible failure.
+
+What it does **not** prove: a checkout of a **private** tooling repository.
+`lgtm-hq/lgtm-ci` is public, so `github.token` reads it too and a working
+checkout does not show the App token was required. The private-tooling case
+stays with lgtm-ci #1500.
+
+Not shown here: a mint skipped because no tooling consumer runs
+(`LGTM_CI_TOOLING_APP_NEEDED` false). No converted reusable sets it false on a
+dispatch: the pilot does only on `merge_group` (this repository has no merge
+queue), `reusable-test-python.yml` only on `pull_request` with `pipeline-skip`.
 
 ## Retry convergence
 
@@ -187,9 +242,10 @@ pre-#849 lgtm-ci.
 `release-benign-hook.yml` is the positive counterpart: `scripts/benign-hook.sh`
 rewrites the tracked `HOOK_RELEASE_INFO.txt` from `NEXT_VERSION` and the
 read-only `release-metadata.json` that lgtm-ci writes for the hook, and fails
-itself if a token is in its environment or the tooling checkout is writable.
-On the pinned post-#849 lgtm-ci, the file's edit must appear in the version PR,
-carried from the `version-update-hook` job to `Create Version PR` as a diff artifact.
+itself if a token is in its environment or the tooling checkout is writable. On
+the pinned post-#849 lgtm-ci, the file's edit must appear in the version PR,
+carried from the `version-update-hook` job to `Create Version PR` as a diff
+artifact.
 
 Results (lgtm-ci `fab929f1`, 2026-10-04):
 

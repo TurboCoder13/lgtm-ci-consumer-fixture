@@ -1,0 +1,39 @@
+# lgtm-ci external-consumer fixture — tooling App NEGATIVE (lgtm-ci #1622)
+#
+# Dispatch-only and EXPECTED TO FAIL: calls the converted
+# reusable-validate-action-pinning.yml with LGTM_CI_TOOLING_APP_CLIENT_ID but
+# without LGTM_CI_TOOLING_APP_PRIVATE_KEY. The called job must stop at
+# "Check tooling App credential" with the `incomplete tooling App credential`
+# annotation, before any mint or tooling checkout; the mint, the tooling
+# checkout and checkout-and-harden must be skipped. Never a fallback to
+# github.token.
+#
+# A green run of this workflow would mean half a credential is accepted.
+# Dispatched by tooling-app-negative-probe.yml, which asserts the failure at
+# that step (scripts/negative/probe.sh) and deletes this run after a pass.
+# No secret is printed. Calls lgtm-hq/lgtm-ci at an exact SHA with NO
+# tooling-ref.
+# Re-pin with: scripts/pin.sh <sha>
+---
+name: fixture-tooling-app-negative
+
+"on":
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  client-id-only:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-validate-action-pinning.yml@3d2d9d665e39171da6ac3ca26518686525507257  # v0.109.0
+    permissions:
+      contents: read
+    with:
+      job-name: "NEGATIVE tooling App client ID only (expected failure)"
+      fail-on-error: false
+      verify-tags: false
+      egress-policy: block
+    secrets:
+      # The private key is deliberately not forwarded.
+      # yamllint disable-line rule:line-length
+      LGTM_CI_TOOLING_APP_CLIENT_ID: ${{ secrets.LGTM_CI_TOOLING_APP_CLIENT_ID }}
