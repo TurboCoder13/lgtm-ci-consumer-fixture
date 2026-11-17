@@ -75,7 +75,9 @@ trap 'rm -f "$log_file"' EXIT
 # unreadable; nothing of the log itself.
 log_has_line() {
 	local id="$1" line="$2"
-	if ! gh api "repos/${GH_REPO}/actions/jobs/${id}/logs" >"$log_file" 2>/dev/null; then
+	# Job logs carry terminal escape sequences, which gh api refuses to write
+	# without this flag. The log only goes to the private file, never to output.
+	if ! gh api --allow-escape-sequences "repos/${GH_REPO}/actions/jobs/${id}/logs" >"$log_file" 2>/dev/null; then
 		echo "log unreadable"
 		return
 	fi
