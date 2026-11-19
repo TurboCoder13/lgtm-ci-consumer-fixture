@@ -14,7 +14,7 @@ permissions: {}
 
 jobs:
   e2e-matrix:
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-matrix.yml@f12dc295ee688273367d8db5a4a2dd29046e60a1  # v0.96.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-matrix.yml@18bc1ead55f068853546660565a597fbbc4354aa  # v0.111.1
     permissions:
       contents: read
     with:
@@ -25,6 +25,8 @@ jobs:
       test-suites: smoke
       browsers: chromium
       shards: 2
+      # Skip apt when ldd finds every shared library (lgtm-ci #1433).
+      system-deps: if-missing
       upload-report: true
       runner-image: ubuntu-24.04
 
