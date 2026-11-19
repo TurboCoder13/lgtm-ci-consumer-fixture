@@ -28,7 +28,7 @@ permissions: {}
 jobs:
   e2e:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@18bc1ead55f068853546660565a597fbbc4354aa  # v0.111.1
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-test-e2e-playwright.yml@2097a900753e3e5ad0e336483501b278e99855ae  # v0.78.1
     permissions:
       contents: read
       pull-requests: write
@@ -41,8 +41,6 @@ jobs:
       test-command: bunx playwright test
       project: chromium
       browsers: chromium
-      # Skip apt when ldd finds every shared library (lgtm-ci #1433).
-      system-deps: if-missing
       upload-report: true
       # Keep the report on green runs too, so verify-report can prove the
       # HTML report exists after a pass (#804 added upload-report-when).
